@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:rescue_terminal/enums/theme.dart';
 import 'package:rescue_terminal/components/common/WaterRipple.dart';
+import 'dart:math';
+import 'package:rescue_terminal/views/rescueScope/util.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'package:rescue_terminal/components/WidgetDefaultBtn.dart';
 
 class RescueScope extends StatefulWidget {
   const RescueScope({super.key});
@@ -9,38 +13,99 @@ class RescueScope extends StatefulWidget {
   State<RescueScope> createState() => _RescueScopeState();
 }
 
-class _RescueScopeState extends State<RescueScope> {
+class _RescueScopeState extends State<RescueScope>
+    with SingleTickerProviderStateMixin {
   final globalKey = GlobalKey<AnimatedListState>();
   var data = <String>['1', '2', '3', '4', '5', '6', '7', '8'];
   int counter = 2;
 
-  // 搜救
-  handleRescue() {}
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _maskPainterAnimation;
+  bool _isAnimating = false;
+  double _currentAngle = 0.0;
+  double _targetAngle = 0.0;
 
-  // 搜救按钮
-  Widget widgetRescueBtn(String name, Gradient btnBgColor) {
-    return Material(
-      color: Colors.transparent, // 确保背景颜色是透明的，只显示渐变色
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: handleRescue,
-        borderRadius: BorderRadius.circular(20), // 确保水波纹效果是圆角的
-        child: Container(
-          height: 40,
-          width: 100,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: btnBgColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            name,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _maskPainterAnimation = Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    // Start the animation
+    _controller.forward();
+
+    // 添加状态监听器
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
+        setState(() {
+          _isAnimating = true;
+        });
+      } else if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        setState(() {
+          _isAnimating = false;
+        });
+      }
+    });
+
+    // 陀螺仪
+    gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
+        .listen(
+      (GyroscopeEvent event) {
+        if(!_isAnimating) {
+          var z = event.z;
+          if (z > 0.1) {
+            double randomNum = (Random().nextDouble() * 10).floor() / 10;
+            _updateRotation(_targetAngle - randomNum);
+            Future.delayed(const Duration(milliseconds: 1000), () {
+              _updateRotation(_targetAngle + randomNum);
+            });
+          } else if (z < -0.1) {
+            double randomNum = (Random().nextDouble() * 10).floor() / 10;
+            _updateRotation(_targetAngle + randomNum);
+            Future.delayed(const Duration(milliseconds: 1000), () {
+              _updateRotation(_targetAngle - randomNum);
+            });
+          }
+        }
+      },
+      onError: (e) {
+        debugPrint('Sensor Not Found');
+      },
+      cancelOnError: true,
     );
   }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _updateRotation(double newAngle) {
+    setState(() {
+      _currentAngle = _targetAngle;
+      _targetAngle = newAngle;
+      _maskPainterAnimation = Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      );
+      _controller.forward(from: 0.0); // 重新启动动画
+    });
+  }
+
+  // 搜救
+  handleRescue() {}
 
   // 初始状态
   Widget widgetInitStatus(MyColorScheme themeData) {
@@ -57,13 +122,13 @@ class _RescueScopeState extends State<RescueScope> {
         const SizedBox(
           height: 24,
         ),
-        widgetRescueBtn('开始搜救', themeData.btnBgColor),
+        WidgetDefaultBtn(name: '开始搜救', btnBgColor: themeData.btnBgColor, callback:handleRescue),
       ],
     );
   }
 
   // 已发现人员
-  Widget widgetHaveFoundPeople(MyColorScheme themeData) {
+  Widget widgetHaveFoundPeopleRecord(MyColorScheme themeData) {
     return Container(
       width: 278,
       decoration: const BoxDecoration(
@@ -216,40 +281,93 @@ class _RescueScopeState extends State<RescueScope> {
 
   // 扫描雷达
   Widget widgetScanningRadar(MyColorScheme themeData) {
-    return Expanded(
-        child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          width: double.infinity,
-          height: double.infinity,
-          child: const WaterRipple(),
-        ),
-        Positioned(
-          bottom: 40,
-          child: widgetRescueBtn(
-            '停止搜救',
-            const LinearGradient(
-              colors: [
-                Color.fromRGBO(255, 171, 119, 1),
-                Color.fromRGBO(244, 182, 134, 1),
-                Color.fromRGBO(245, 81, 64, 1)
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+    List<User> peopleRecord = [
+      User(
+          id: '#10001',
+          name: '张雨廷',
+          avatar: 'assets/images/construction-personnel.png'),
+      User(
+          id: '#10002',
+          name: '李逵',
+          avatar: 'assets/images/construction-personnel.png'),
+      User(
+          id: '#10003',
+          name: '宋飞',
+          avatar: 'assets/images/construction-personnel.png'),
+    ];
+    // 雷达扫描动态添加扫描人员
+    List<Widget> scanningPeople = [];
+    for (var i = 0; i < peopleRecord.length; i++) {
+      double value = Random().nextDouble() * 100;
+      // print(value);
+      scanningPeople.add(Positioned(
+        top: value,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: const Column(
+            children: [
+              Text('#123'),
+              Text('张云飞'),
+              Image(
+                image: AssetImage('assets/images/construction-personnel.png'),
+              ),
+            ],
           ),
         ),
-      ],
-    ));
+      ));
+    }
+    return Expanded(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            width: double.infinity,
+            height: double.infinity,
+            child: const WaterRipple(),
+          ),
+          AnimatedBuilder(
+            animation: _maskPainterAnimation,
+            builder: (context, child) {
+              return Transform.rotate(
+                // angle: 0.5, // 旋转角度（弧度）
+                angle: _maskPainterAnimation.value,
+                child: CustomPaint(
+                  size: const Size(double.infinity, double.infinity),
+                  painter: MaskPainter(
+                    maskColor: Color.fromRGBO(203, 215, 225, 1),
+                  ),
+                ),
+              );
+            },
+          ),
+          Positioned(
+            bottom: 40,
+            child: WidgetDefaultBtn(
+              name: '停止搜救',
+              btnBgColor: const LinearGradient(
+                colors: [
+                  Color.fromRGBO(255, 171, 119, 1),
+                  Color.fromRGBO(244, 182, 134, 1),
+                  Color.fromRGBO(245, 81, 64, 1)
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              callback: handleRescue
+            ),
+          ),
+          // ...scanningPeople,
+        ],
+      ),
+    );
   }
 
   // 搜索状态
   Widget widgetRescueStatus(MyColorScheme themeData) {
     return Row(
       children: [
-        widgetHaveFoundPeople(themeData),
+        widgetHaveFoundPeopleRecord(themeData),
         widgetScanningRadar(themeData),
       ],
     );

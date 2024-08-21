@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rescue_terminal/views/rescueScope/index.dart';
+import 'package:rescue_terminal/views/whiteList/index.dart';
 import 'package:rescue_terminal/enums/theme.dart';
 
 class Home extends StatefulWidget {
@@ -10,7 +11,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  Widget sidbarWidget() {
+  Widget menuWidget() {
     return Container(
       width: 120,
       decoration: const BoxDecoration(
@@ -25,7 +26,7 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            height: 100,
+            height: 150,
             child: Column(
               children: [
                 Image(
@@ -39,7 +40,7 @@ class _HomeState extends State<Home> {
             ),
           ),
           SizedBox(
-            height: 100,
+            height: 150,
             child: Column(
               children: [
                 Image(
@@ -53,7 +54,7 @@ class _HomeState extends State<Home> {
             ),
           ),
           SizedBox(
-            height: 100,
+            height: 150,
             child: Column(
               children: [
                 Image(
@@ -81,8 +82,9 @@ class _HomeState extends State<Home> {
         ),
         child:Row(
           children: [
-            sidbarWidget(),
-            const RescueScope(),
+            menuWidget(),
+            // const RescueScope(),
+            const WhiteList(),
           ],
         ),
       ),
