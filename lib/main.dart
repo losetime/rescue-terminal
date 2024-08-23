@@ -10,6 +10,7 @@ void main() {
       DeviceOrientation.landscapeRight,
     ],
   );
+
   runApp(const MyApp());
 }
 

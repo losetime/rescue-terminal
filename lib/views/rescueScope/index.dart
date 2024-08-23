@@ -4,7 +4,7 @@ import 'package:rescue_terminal/components/common/WaterRipple.dart';
 import 'dart:math';
 import 'package:rescue_terminal/views/rescueScope/util.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:rescue_terminal/components/WidgetDefaultBtn.dart';
+import 'package:rescue_terminal/components/widget_default_btn.dart';
 
 class RescueScope extends StatefulWidget {
   const RescueScope({super.key});
@@ -25,6 +25,7 @@ class _RescueScopeState extends State<RescueScope>
   bool _isAnimating = false;
   double _currentAngle = 0.0;
   double _targetAngle = 0.0;
+  dynamic _gyroscopeEvent;
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _RescueScopeState extends State<RescueScope>
     });
 
     // 陀螺仪
-    gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
+    _gyroscopeEvent = gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
         .listen(
       (GyroscopeEvent event) {
         if(!_isAnimating) {
@@ -89,6 +90,7 @@ class _RescueScopeState extends State<RescueScope>
 
   @override
   void dispose() {
+    _gyroscopeEvent.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -114,7 +116,7 @@ class _RescueScopeState extends State<RescueScope>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Image(
-          image: AssetImage('assets/images/empty.png'),
+          image: AssetImage('assets/images/empty-light.png'),
           width: 269,
           height: 82,
           fit: BoxFit.fill,
@@ -335,7 +337,7 @@ class _RescueScopeState extends State<RescueScope>
                 child: CustomPaint(
                   size: const Size(double.infinity, double.infinity),
                   painter: MaskPainter(
-                    maskColor: Color.fromRGBO(203, 215, 225, 1),
+                    maskColor: const Color.fromRGBO(203, 215, 225, 1),
                   ),
                 ),
               );
@@ -354,7 +356,8 @@ class _RescueScopeState extends State<RescueScope>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-              callback: handleRescue
+              callback: handleRescue,
+              width: 110,
             ),
           ),
           // ...scanningPeople,

@@ -51,8 +51,8 @@ class GlobalThemData {
         Color.fromRGBO(229, 234, 239, 1),
         Color.fromRGBO(200, 213, 223, 1),
       ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
     ),
     btnTextColor: const Color.fromRGBO(101, 110, 126, 1),
     appBgColor: const LinearGradient(

@@ -1,0 +1,95 @@
+import 'package:flutter/material.dart';
+import 'package:rescue_terminal/enums/theme.dart';
+
+class DisplaySetting extends StatefulWidget {
+  const DisplaySetting({super.key});
+
+  @override
+  State<DisplaySetting> createState() => _DisplaySettingState();
+}
+
+class _DisplaySettingState extends State<DisplaySetting> {
+  final List<Map<String, dynamic>> themeOptions = [
+    {'name': '普通模式', 'img': 'assets/images/light-theme.png'},
+    {'name': '暗黑模式', 'img': 'assets/images/dark-theme.png'},
+  ];
+  int themeIndexActive = 0;
+
+  Widget widgetTheme(MyColorScheme themeData) {
+    List<Widget> themeAssemble = [];
+    for (int i = 0; i < themeOptions.length; i++) {
+      themeAssemble.add(
+        Padding(
+          padding: const EdgeInsets.only(right: 34),
+          child: Column(
+            children: [
+              InkWell(
+                onTap: () {
+                  handleSelectTheme(i);
+                },
+                child: Image(
+                  image: AssetImage(themeOptions[i]['img']),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 15),
+                child: Row(
+                  children: [
+                    Text(
+                      themeOptions[i]['name'],
+                      style: TextStyle(
+                        color: themeData.defaultTextColor,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 6,
+                    ),
+                    Visibility(
+                      visible: themeIndexActive == i,
+                      child: const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 14, left: 30),
+            child: Text('显示设置'),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 39, left: 30),
+            child: Row(
+              children: [
+                ...themeAssemble,
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  handleSelectTheme(int index) {
+    setState(() {
+      themeIndexActive = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    MyColorScheme themeData = GlobalThemData.themeData(context);
+    return widgetTheme(themeData);
+  }
+}

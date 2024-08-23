@@ -36,6 +36,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   sensors_plus: ^6.0.1
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  logger: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -61,12 +64,19 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/empty.png
+    - assets/images/empty-light.png
     - assets/images/rescue_scope.png
     - assets/images/white_list.png
     - assets/images/setting.png
     - assets/images/construction-personnel.png
     - assets/images/wristband.png
+    - assets/images/wristband-online.png
+    - assets/images/light-theme.png
+    - assets/images/dark-theme.png
+    - assets/images/theme-active.png
+    #通讯配置
+    - assets/images/is-admin-light.png
+    - assets/images/communication-light.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

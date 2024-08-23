@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:sensors_plus/sensors_plus.dart';
 
 class User {
   final String id;
