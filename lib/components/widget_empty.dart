@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:rescue_terminal/enums/theme.dart';
 
 class WidgetEmpty extends StatelessWidget {
   final double width;
   final double height;
   final String message;
-  const WidgetEmpty({super.key, this.width = 269, this.height = 82, this.message = '暂无内容' });
+
+  const WidgetEmpty(
+      {super.key, this.width = 269, this.height = 82, this.message = '暂无内容'});
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
     return Expanded(
       child: Center(
         child: Column(
@@ -21,11 +21,13 @@ class WidgetEmpty extends StatelessWidget {
               height: height,
               fit: BoxFit.fill,
             ),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 12,
-                color: themeData.defaultTextColor,
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 12,
+                ),
               ),
             ),
           ],

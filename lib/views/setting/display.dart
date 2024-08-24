@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rescue_terminal/enums/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rescue_terminal/store/theme_notifier.dart';
+import 'package:provider/provider.dart';
 
 class DisplaySetting extends StatefulWidget {
   const DisplaySetting({super.key});
@@ -10,12 +12,12 @@ class DisplaySetting extends StatefulWidget {
 
 class _DisplaySettingState extends State<DisplaySetting> {
   final List<Map<String, dynamic>> themeOptions = [
-    {'name': '普通模式', 'img': 'assets/images/light-theme.png'},
-    {'name': '暗黑模式', 'img': 'assets/images/dark-theme.png'},
+    {'name': '普通模式', 'img': 'assets/images/light-theme.png', 'model': 'light'},
+    {'name': '暗黑模式', 'img': 'assets/images/dark-theme.png', 'model': 'dark'},
   ];
   int themeIndexActive = 0;
 
-  Widget widgetTheme(MyColorScheme themeData) {
+  Widget widgetTheme() {
     List<Widget> themeAssemble = [];
     for (int i = 0; i < themeOptions.length; i++) {
       themeAssemble.add(
@@ -37,9 +39,6 @@ class _DisplaySettingState extends State<DisplaySetting> {
                   children: [
                     Text(
                       themeOptions[i]['name'],
-                      style: TextStyle(
-                        color: themeData.defaultTextColor,
-                      ),
                     ),
                     const SizedBox(
                       width: 6,
@@ -81,15 +80,28 @@ class _DisplaySettingState extends State<DisplaySetting> {
     );
   }
 
-  handleSelectTheme(int index) {
+  handleSelectTheme(int index) async {
     setState(() {
       themeIndexActive = index;
+    });
+    final String model = themeOptions[index]['model'];
+    Provider.of<ThemeNotifier>(context, listen: false).updateThemeStatus(model);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('themeModel', model);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final String themeStatus = Provider.of<ThemeNotifier>(context, listen: false).themeStatus;
+    final int findIndex = themeOptions.indexWhere((e) => e['model'] == themeStatus);
+    setState(() {
+      themeIndexActive = findIndex;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
-    return widgetTheme(themeData);
+    return widgetTheme();
   }
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rescue_terminal/enums/theme.dart';
 import 'package:rescue_terminal/components/widget_default_btn.dart';
 import 'package:rescue_terminal/views/whiteList/util.dart';
 import 'package:rescue_terminal/components/widget_empty.dart';
+import 'package:provider/provider.dart';
+import 'package:rescue_terminal/store/theme_notifier.dart';
 
 class WhiteList extends StatefulWidget {
   const WhiteList({super.key});
@@ -16,7 +17,7 @@ class _WhiteListState extends State<WhiteList> {
   final wristbandGlobalKey = GlobalKey<AnimatedListState>();
 
   // 已添加白名单
-  List<Map<String, dynamic>> whiteListRecord = []; 
+  List<Map<String, dynamic>> whiteListRecord = [];
 
   // 搜索到的手环列表
   List<Map<String, dynamic>> searchedWristbandRecord = [];
@@ -61,21 +62,17 @@ class _WhiteListState extends State<WhiteList> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   '白名单',
                   style: TextStyle(
-                    color: themeData.defaultTextColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
                   child: Text(
                     '白名单中的智能手环(佩戴人员)，不会出现在救援模式的搜索结果中。',
-                    style: TextStyle(
-                      color: themeData.defaultTextColor,
-                    ),
                   ),
                 ),
                 Row(
@@ -126,11 +123,10 @@ class _WhiteListState extends State<WhiteList> {
             ),
             child: Row(
               children: [
-                Text(
+                const Text(
                   '白名单',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: themeData.defaultTextColor,
                   ),
                 ),
                 Padding(
@@ -168,7 +164,11 @@ class _WhiteListState extends State<WhiteList> {
                       return FadeTransition(
                         opacity: animation,
                         child: widgetPeopleRecord(
-                            themeData, index, '1', handleDeleteWhiteList),
+                          themeData,
+                          index,
+                          '1',
+                          handleDeleteWhiteList,
+                        ),
                       );
                     },
                   ),
@@ -205,8 +205,7 @@ class _WhiteListState extends State<WhiteList> {
                 children: [
                   Text(
                     '佩戴人：${whiteListRecord[index]['name']}',
-                    style: TextStyle(
-                      color: themeData.defaultTextColor,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -214,9 +213,8 @@ class _WhiteListState extends State<WhiteList> {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       'IMEI：${whiteListRecord[index]['imei']}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: themeData.defaultTextColor,
                       ),
                     ),
                   ),
@@ -251,17 +249,16 @@ class _WhiteListState extends State<WhiteList> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '白名单',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: themeData.defaultTextColor,
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 4),
                 child: Icon(
                   Icons.help_outline,
@@ -292,23 +289,21 @@ class _WhiteListState extends State<WhiteList> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 20, left: 20),
+          const Padding(
+            padding: EdgeInsets.only(top: 20, left: 20),
             child: Text(
               '添加白名单',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: themeData.defaultTextColor,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20, left: 20),
+          const Padding(
+            padding: EdgeInsets.only(top: 20, left: 20),
             child: Text(
               '正在搜索附近的智能手环...',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: themeData.defaultTextColor,
                 fontSize: 16,
               ),
             ),
@@ -316,27 +311,27 @@ class _WhiteListState extends State<WhiteList> {
           searchedWristbandRecord.isEmpty
               ? const WidgetEmpty()
               : Container(
-            width: 340,
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Expanded(
-              child: AnimatedList(
-                key: wristbandGlobalKey,
-                initialItemCount: searchedWristbandRecord.length,
-                itemBuilder: (
-                    BuildContext context,
-                    int index,
-                    Animation<double> animation,
-                    ) {
-                  //添加列表项时会执行渐显动画
-                  return FadeTransition(
-                    opacity: animation,
-                    child: widgetPeopleRecord(
-                        themeData, index, '2', handleAddWhiteList),
-                  );
-                },
-              ),
-            ),
-          ),
+                  width: 340,
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Expanded(
+                    child: AnimatedList(
+                      key: wristbandGlobalKey,
+                      initialItemCount: searchedWristbandRecord.length,
+                      itemBuilder: (
+                        BuildContext context,
+                        int index,
+                        Animation<double> animation,
+                      ) {
+                        //添加列表项时会执行渐显动画
+                        return FadeTransition(
+                          opacity: animation,
+                          child: widgetPeopleRecord(
+                              themeData, index, '2', handleAddWhiteList),
+                        );
+                      },
+                    ),
+                  ),
+                ),
         ],
       ),
     );
@@ -356,7 +351,8 @@ class _WhiteListState extends State<WhiteList> {
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    MyColorScheme themeData = themeNotifier.themeData;
     return Expanded(
       child: widgetRescueStatus(themeData),
     );

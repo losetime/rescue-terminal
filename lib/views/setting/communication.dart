@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rescue_terminal/components/input_widget.dart';
-import 'package:rescue_terminal/enums/theme.dart';
 import 'package:rescue_terminal/components/widget_default_btn.dart';
+import 'package:provider/provider.dart';
+import 'package:rescue_terminal/store/theme_notifier.dart';
 
 class CommunicationSetting extends StatefulWidget {
   const CommunicationSetting({super.key});
@@ -28,8 +29,8 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
    * @desc 下一步
    */
   void handleNextStep() {
-    print(usernameController.text);
-    print(passwordController.text);
+    debugPrint(usernameController.text);
+    debugPrint(passwordController.text);
     setState(() {
       isAdmin = true;
     });
@@ -47,31 +48,30 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
   /*
    * @desc 创建步骤
    */
-  Widget createStepWidget(MyColorScheme themeData) {
+  Widget createStepWidget() {
     return Container(
       width: 650,
       height: 70,
       decoration: BoxDecoration(
-          border: Border.all(
-        color: themeData.defaultTextColor,
-        width: 0.5,
-      )),
+        border: Border.all(
+          width: 0.5,
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Column(
+          const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Image(
+              Image(
                 image: AssetImage('assets/images/is-admin-light.png'),
               ),
-              const SizedBox(
+              SizedBox(
                 height: 6,
               ),
               Text(
                 '验证管理员身份',
                 style: TextStyle(
-                  color: themeData.defaultTextColor,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -92,10 +92,9 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
               const SizedBox(
                 height: 6,
               ),
-              Text(
+              const Text(
                 '设置通讯地址',
                 style: TextStyle(
-                  color: themeData.defaultTextColor,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -173,7 +172,7 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
     return v!.trim().isNotEmpty ? null : "key不能为空";
   }
 
-  Widget createCommumicationFormWidget(MyColorScheme themeData) {
+  Widget createCommumicationFormWidget(MyColorScheme themeData, String themeStatus) {
     return Container(
       padding: const EdgeInsets.only(top: 60),
       width: 250,
@@ -220,6 +219,7 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
                       ),
                     ],
                     textColor: themeData.defaultTextColor,
+                    border: themeStatus == 'dark',
                   ),
                 ),
                 const SizedBox(
@@ -244,44 +244,52 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
   // 默认展示配置
   Widget widgetConfigurationDisplay() {
     return Expanded(
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 200,
-                padding: const EdgeInsets.only(bottom: 12),
-                child: const Text('服务器地址：192.128.196.1.1'),
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 200,
+              padding: const EdgeInsets.only(bottom: 12),
+              child: const Text(
+                '服务器地址：192.128.196.1.1',
               ),
-              Container(
-                width: 200,
-                padding: const EdgeInsets.only(bottom: 12),
-                child: const Text('端口：2209'),
+            ),
+            Container(
+              width: 200,
+              padding: const EdgeInsets.only(bottom: 12),
+              child: const Text(
+                '端口：2209',
               ),
-              Container(
-                width: 200,
-                padding: const EdgeInsets.only(bottom: 30),
-                child: const Text('key：*************3243'),
+            ),
+            Container(
+              width: 200,
+              padding: const EdgeInsets.only(bottom: 30),
+              child: const Text(
+                'key：*************3243',
               ),
-              WidgetDefaultBtn(
-                name: '去设置',
-                callback: () {
-                  setState(() {
-                    configuring = true;
-                  });
-                },
-              ),
-            ],
-          ),
+            ),
+            WidgetDefaultBtn(
+              name: '去设置',
+              callback: () {
+                setState(() {
+                  configuring = true;
+                });
+              },
+            ),
+          ],
         ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    MyColorScheme themeData = themeNotifier.themeData;
+    String themeStatus = themeNotifier.themeStatus;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,9 +305,9 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
                       width: double.infinity,
                       child: Column(
                         children: [
-                          createStepWidget(themeData),
+                          createStepWidget(),
                           isAdmin
-                              ? createCommumicationFormWidget(themeData)
+                              ? createCommumicationFormWidget(themeData, themeStatus)
                               : createVerifyAdminFormWidget(themeData),
                         ],
                       ),

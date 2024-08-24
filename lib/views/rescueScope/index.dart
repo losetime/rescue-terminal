@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rescue_terminal/enums/theme.dart';
 import 'package:rescue_terminal/components/common/WaterRipple.dart';
 import 'dart:math';
 import 'package:rescue_terminal/views/rescueScope/util.dart';
@@ -16,8 +15,6 @@ class RescueScope extends StatefulWidget {
 class _RescueScopeState extends State<RescueScope>
     with SingleTickerProviderStateMixin {
   final globalKey = GlobalKey<AnimatedListState>();
-  var data = <String>['1', '2', '3', '4', '5', '6', '7', '8'];
-  int counter = 2;
 
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -26,6 +23,8 @@ class _RescueScopeState extends State<RescueScope>
   double _currentAngle = 0.0;
   double _targetAngle = 0.0;
   dynamic _gyroscopeEvent;
+
+  bool isSearching = false;
 
   @override
   void initState() {
@@ -40,7 +39,8 @@ class _RescueScopeState extends State<RescueScope>
       curve: Curves.easeInOut,
     );
 
-    _maskPainterAnimation = Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
+    _maskPainterAnimation =
+        Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
@@ -49,11 +49,13 @@ class _RescueScopeState extends State<RescueScope>
 
     // 添加状态监听器
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
+      if (status == AnimationStatus.forward ||
+          status == AnimationStatus.reverse) {
         setState(() {
           _isAnimating = true;
         });
-      } else if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+      } else if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
         setState(() {
           _isAnimating = false;
         });
@@ -61,10 +63,11 @@ class _RescueScopeState extends State<RescueScope>
     });
 
     // 陀螺仪
-    _gyroscopeEvent = gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
-        .listen(
+    _gyroscopeEvent =
+        gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
+            .listen(
       (GyroscopeEvent event) {
-        if(!_isAnimating) {
+        if (!_isAnimating) {
           var z = event.z;
           if (z > 0.1) {
             double randomNum = (Random().nextDouble() * 10).floor() / 10;
@@ -99,18 +102,30 @@ class _RescueScopeState extends State<RescueScope>
     setState(() {
       _currentAngle = _targetAngle;
       _targetAngle = newAngle;
-      _maskPainterAnimation = Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
+      _maskPainterAnimation =
+          Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
         CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
       );
       _controller.forward(from: 0.0); // 重新启动动画
     });
   }
 
-  // 搜救
-  handleRescue() {}
+  // 开始搜救
+  handleStartRescue() {
+    setState(() {
+      isSearching = true;
+    });
+  }
+
+  // 停止搜救
+  handleStopRescue() {
+    setState(() {
+      isSearching = false;
+    });
+  }
 
   // 初始状态
-  Widget widgetInitStatus(MyColorScheme themeData) {
+  Widget widgetInitStatus() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -124,13 +139,28 @@ class _RescueScopeState extends State<RescueScope>
         const SizedBox(
           height: 24,
         ),
-        WidgetDefaultBtn(name: '开始搜救', btnBgColor: themeData.btnBgColor, callback:handleRescue),
+        WidgetDefaultBtn(
+          name: '开始搜救',
+          callback: handleStartRescue,
+          width: 110,
+        ),
       ],
     );
   }
 
   // 已发现人员
-  Widget widgetHaveFoundPeopleRecord(MyColorScheme themeData) {
+  List<User> haveFoundPeopleRecord = [
+    User(
+        id: '#10001',
+        name: '李云龙',
+        avatar: 'assets/images/construction-personnel.png'),
+    User(
+        id: '#10001',
+        name: '楚云飞',
+        avatar: 'assets/images/construction-personnel.png'),
+  ];
+
+  Widget widgetHaveFoundPeopleRecord() {
     return Container(
       width: 278,
       decoration: const BoxDecoration(
@@ -156,30 +186,26 @@ class _RescueScopeState extends State<RescueScope>
                 ),
               ),
             ),
-            child: Text(
+            child: const Text(
               '正在搜索附近人员...',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: themeData.defaultTextColor,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(
+          const Padding(
+            padding: EdgeInsets.only(
               top: 14,
               left: 14,
             ),
             child: Text(
               '已发现3人',
-              style: TextStyle(
-                color: themeData.defaultTextColor,
-              ),
             ),
           ),
           Expanded(
             child: AnimatedList(
               key: globalKey,
-              initialItemCount: data.length,
+              initialItemCount: haveFoundPeopleRecord.length,
               itemBuilder: (
                 BuildContext context,
                 int index,
@@ -188,7 +214,7 @@ class _RescueScopeState extends State<RescueScope>
                 //添加列表项时会执行渐显动画
                 return FadeTransition(
                   opacity: animation,
-                  child: widgetPeopleRecord(themeData, index),
+                  child: widgetPeopleRecord(index),
                 );
               },
             ),
@@ -199,15 +225,15 @@ class _RescueScopeState extends State<RescueScope>
   }
 
   // 人员列表
-  Widget widgetPeopleRecord(MyColorScheme themeData, int index) {
+  Widget widgetPeopleRecord(int index) {
     return Container(
       key: ValueKey(index),
       margin: const EdgeInsets.only(bottom: 22),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          const Image(
-            image: AssetImage('assets/images/construction-personnel.png'),
+          Image(
+            image: AssetImage(haveFoundPeopleRecord[index].avatar),
             width: 44,
             height: 62,
             fit: BoxFit.fill,
@@ -225,9 +251,8 @@ class _RescueScopeState extends State<RescueScope>
                       right: 8,
                     ),
                     child: Text(
-                      '张云飞',
-                      style: TextStyle(
-                        color: themeData.defaultTextColor,
+                      haveFoundPeopleRecord[index].name,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -254,23 +279,21 @@ class _RescueScopeState extends State<RescueScope>
                   )
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
                 child: Text(
                   '心率71，血压125/71，血氧98%',
                   style: TextStyle(
                     fontSize: 12,
-                    color: themeData.defaultTextColor,
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 5),
+              const Padding(
+                padding: EdgeInsets.only(top: 5),
                 child: Text(
                   '体温36.5℃，IMEI: 653429838222',
                   style: TextStyle(
                     fontSize: 12,
-                    color: themeData.defaultTextColor,
                   ),
                 ),
               ),
@@ -282,7 +305,7 @@ class _RescueScopeState extends State<RescueScope>
   }
 
   // 扫描雷达
-  Widget widgetScanningRadar(MyColorScheme themeData) {
+  Widget widgetScanningRadar() {
     List<User> peopleRecord = [
       User(
           id: '#10001',
@@ -356,7 +379,7 @@ class _RescueScopeState extends State<RescueScope>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-              callback: handleRescue,
+              callback: handleStopRescue,
               width: 110,
             ),
           ),
@@ -367,21 +390,21 @@ class _RescueScopeState extends State<RescueScope>
   }
 
   // 搜索状态
-  Widget widgetRescueStatus(MyColorScheme themeData) {
+  Widget widgetRescueStatus() {
     return Row(
       children: [
-        widgetHaveFoundPeopleRecord(themeData),
-        widgetScanningRadar(themeData),
+        widgetHaveFoundPeopleRecord(),
+        widgetScanningRadar(),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
     return Expanded(
-      // child: widgetInitStatus(themeData),
-      child: widgetRescueStatus(themeData),
+      child: isSearching
+          ? widgetRescueStatus()
+          : widgetInitStatus(),
     );
   }
 }

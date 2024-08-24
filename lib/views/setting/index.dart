@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rescue_terminal/enums/theme.dart';
 import 'package:rescue_terminal/views/setting/display.dart';
 import 'package:rescue_terminal/views/setting/communication.dart';
+import 'package:rescue_terminal/views/setting/update.dart';
 
 class Setting extends StatefulWidget {
   const Setting({super.key});
@@ -14,7 +14,7 @@ class _SettingState extends State<Setting> {
   int _activeIndex = 0;
 
   // 菜单
-  Widget widgetMenu(MyColorScheme themeData) {
+  Widget widgetMenu() {
     final List<Map<String, dynamic>> menuOptions = [
       {'name': '显示设置'},
       {'name': '通讯配置'},
@@ -44,14 +44,10 @@ class _SettingState extends State<Setting> {
               children: [
                 Text(
                   menuOptions[i]['name'],
-                  style: TextStyle(
-                    color: themeData.defaultTextColor,
-                  ),
                 ),
-                Icon(
+                const Icon(
                   Icons.keyboard_arrow_right,
                   size: 20,
-                  color: themeData.defaultTextColor,
                 )
               ],
             ),
@@ -84,11 +80,10 @@ class _SettingState extends State<Setting> {
                 ),
               ),
             ),
-            child: Text(
+            child: const Text(
               '设置',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: themeData.defaultTextColor,
               ),
             ),
           ),
@@ -112,6 +107,8 @@ class _SettingState extends State<Setting> {
         return const DisplaySetting();
       case 1:
         return const CommunicationSetting();
+      case 2:
+        return const UpdateSetting();
       default:
         return const DisplaySetting();
     }
@@ -119,10 +116,9 @@ class _SettingState extends State<Setting> {
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
     return Expanded(
       child: Row(
-        children: [widgetMenu(themeData), widgetActivePage()],
+        children: [widgetMenu(), widgetActivePage()],
       ),
     );
   }

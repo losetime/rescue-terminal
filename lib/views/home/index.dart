@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:rescue_terminal/views/rescueScope/index.dart';
 import 'package:rescue_terminal/views/whiteList/index.dart';
 import 'package:rescue_terminal/views/setting/index.dart';
-import 'package:rescue_terminal/enums/theme.dart';
 import 'package:rescue_terminal/views/whiteList/util.dart';
 import 'package:rescue_terminal/store/database_helper.dart';
+import 'package:provider/provider.dart';
+import 'package:rescue_terminal/store/theme_notifier.dart';
 
 class Menu {
   final String name;
@@ -45,11 +46,6 @@ class _HomeState extends State<Home> {
         img: 'assets/images/setting.png',
         activeImg: 'assets/images/setting.png'),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   // 选择菜单
   handleSelectMenu(int index) async {
@@ -102,10 +98,12 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: getMenuWidget,
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: getMenuWidget,
+          ),
         ),
       ),
     );
@@ -127,7 +125,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    MyColorScheme themeData = GlobalThemData.themeData(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    MyColorScheme themeData = themeNotifier.themeData;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize:
