@@ -3,6 +3,7 @@ import 'package:rescue_terminal/components/input_widget.dart';
 import 'package:rescue_terminal/components/widget_default_btn.dart';
 import 'package:provider/provider.dart';
 import 'package:rescue_terminal/store/theme_notifier.dart';
+import 'package:rescue_terminal/components/dashed_arrow_painter.dart';
 
 class CommunicationSetting extends StatefulWidget {
   const CommunicationSetting({super.key});
@@ -12,6 +13,9 @@ class CommunicationSetting extends StatefulWidget {
 }
 
 class _CommunicationSettingState extends State<CommunicationSetting> {
+  MyColorScheme themeData = ThemeNotifier().themeData;
+  String themeStatus = ThemeNotifier().themeStatus;
+
   // 正在配置
   bool configuring = false;
   bool isAdmin = false;
@@ -78,8 +82,12 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
               ),
             ],
           ),
-          const SizedBox(
-            width: 150,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: CustomPaint(
+              size: const Size(80, 30), // Width and height of the arrow
+              painter: DashedArrowPainter(themeData.defaultTextColor),
+            ),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -121,7 +129,7 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
     return v!.trim().isNotEmpty ? null : "密码不能为空";
   }
 
-  Widget createVerifyAdminFormWidget(MyColorScheme themeData) {
+  Widget createVerifyAdminFormWidget() {
     return Container(
       padding: const EdgeInsets.only(top: 60),
       width: 250,
@@ -132,12 +140,20 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             createInputWidget(
-                '管理员账号', usernameController, themeData, validatorUsername),
+              '管理员账号',
+              usernameController,
+              themeData,
+              validatorUsername,
+            ),
             const SizedBox(
               height: 15,
             ),
             createInputWidget(
-                '管理员密码', passwordController, themeData, validatorPassword),
+              '管理员密码',
+              passwordController,
+              themeData,
+              validatorPassword,
+            ),
             const SizedBox(
               height: 30,
             ),
@@ -172,7 +188,7 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
     return v!.trim().isNotEmpty ? null : "key不能为空";
   }
 
-  Widget createCommumicationFormWidget(MyColorScheme themeData, String themeStatus) {
+  Widget createCommumicationFormWidget() {
     return Container(
       padding: const EdgeInsets.only(top: 60),
       width: 250,
@@ -288,8 +304,10 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    MyColorScheme themeData = themeNotifier.themeData;
-    String themeStatus = themeNotifier.themeStatus;
+    // MyColorScheme themeData = themeNotifier.themeData;
+    // String themeStatus = themeNotifier.themeStatus;
+    themeData = themeNotifier.themeData;
+    themeStatus = themeNotifier.themeStatus;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,8 +325,8 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
                         children: [
                           createStepWidget(),
                           isAdmin
-                              ? createCommumicationFormWidget(themeData, themeStatus)
-                              : createVerifyAdminFormWidget(themeData),
+                              ? createCommumicationFormWidget()
+                              : createVerifyAdminFormWidget(),
                         ],
                       ),
                     ),

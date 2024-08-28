@@ -1,11 +1,15 @@
+import 'dart:ui';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:rescue_terminal/views/home/index.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rescue_terminal/store/theme_notifier.dart';
 import 'package:provider/provider.dart';
+import 'package:rescue_terminal/service/http/index.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
-void main() {
+void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
     [
@@ -13,7 +17,22 @@ void main() {
       DeviceOrientation.landscapeRight,
     ],
   );
-
+  // 初始化dio插件
+  DioClient().init(
+    baseUrl: "http://192.168.35.50:3000",
+    defaultHeaders: {
+      'Authorization': 'Bearer your_token', // 可选
+    },
+  );
+  // 初始化下载器
+  await FlutterDownloader.initialize(
+      debug: true, // optional: 设置为false以禁用将日志打印到控制台 (default: true)
+      ignoreSsl: true // option: 设置为false表示禁用HTTP链接 (default: false)
+  );
+  // final ReceivePort port = ReceivePort();
+  // debugPrint('port-- ${port.sendPort}');
+  // // 注册 IsolateNameServer 端口
+  // IsolateNameServer.registerPortWithName(port.sendPort, 'downloader_send_port');
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeNotifier(),
@@ -30,7 +49,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();

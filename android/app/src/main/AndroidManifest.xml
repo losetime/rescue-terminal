@@ -1,8 +1,21 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--网络权限-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!--写权限-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!--读权限-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!--权限允许应用程序请求安装包的权限-->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
         android:label="rescue_terminal"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,5 +42,16 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+
+        <provider
+                android:name="vn.hunghd.flutterdownloader.DownloadedFileProvider"
+                android:authorities="${applicationId}.flutter_downloader.provider"
+                android:exported="false"
+                android:grantUriPermissions="true" tools:ignore="MissingClass">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 </manifest>

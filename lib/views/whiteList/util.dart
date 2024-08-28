@@ -1,5 +1,21 @@
 import 'package:rescue_terminal/store/database_helper.dart';
 import 'package:logger/logger.dart';
+//
+// class WhiteListScheme {
+//   // 字段
+//   final int id;
+//   final String name;
+//   final String imei;
+//   final int isOnline;
+//
+//   // 构造函数
+//   WhiteListScheme({
+//     required this.id,
+//     required this.name,
+//     required this.imei,
+//     required this.isOnline,
+//   });
+// }
 
 class WhiteListUtil {
   final dbHelper = DatabaseHelper();

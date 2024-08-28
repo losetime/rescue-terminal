@@ -6,20 +6,24 @@ class WidgetDefaultBtn extends StatelessWidget {
   final String name;
   final GestureTapCallback callback;
   final Gradient? btnBgColor;
-  final double width;
   final Color? textColor;
   final List<BoxShadow>? boxShadow;
   final bool border;
+  final double width;
+  final double height;
+  final double fontSize;
 
   const WidgetDefaultBtn({
     super.key,
     this.name = '按钮',
     this.btnBgColor,
     required this.callback,
-    this.width = 100,
     this.textColor,
     this.boxShadow,
     this.border = false,
+    this.width = 100,
+    this.height = 40,
+    this.fontSize = 14
   });
 
   @override
@@ -27,7 +31,7 @@ class WidgetDefaultBtn extends StatelessWidget {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     MyColorScheme themeData = themeNotifier.themeData;
     return Container(
-      height: 40,
+      height: height,
       width: width,
       decoration: border
           ? BoxDecoration(
@@ -51,6 +55,7 @@ class WidgetDefaultBtn extends StatelessWidget {
           style: TextStyle(
             color: textColor ?? themeData.btnTextColor,
             fontWeight: FontWeight.bold,
+            fontSize: fontSize,
           ),
         ),
       ),

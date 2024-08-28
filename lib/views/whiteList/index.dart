@@ -20,8 +20,20 @@ class _WhiteListState extends State<WhiteList> {
   List<Map<String, dynamic>> whiteListRecord = [];
 
   // 搜索到的手环列表
-  List<Map<String, dynamic>> searchedWristbandRecord = [];
-  bool isSearching = false;
+  List<Map<String, dynamic>> searchedWristbandRecord = [
+    {
+      'name': '李云龙',
+      'imei': '123456789012398',
+      'isOnline': 1, // SQLite 存储布尔值为 1 或 0
+    },
+    {
+      'name': '楚云飞',
+      'imei': '123456789012399',
+      'isOnline': 1, // SQLite 存储布尔值为 1 或 0
+    },
+  ];
+
+  bool isSearching = true;
 
   @override
   void initState() {
@@ -29,16 +41,74 @@ class _WhiteListState extends State<WhiteList> {
     getWhiteList();
   }
 
+  // 初始状态
+  handleSearch() {
+    setState(() {
+      isSearching = true;
+    });
+  }
+
+  Widget widgetInitStatus(MyColorScheme themeData) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '白名单',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Icon(
+                  Icons.help_outline,
+                  size: 16,
+                  color: Color.fromRGBO(153, 163, 174, 1),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 24,
+          ),
+          WidgetDefaultBtn(
+            name: '添加',
+            btnBgColor: themeData.btnBgColor,
+            callback: handleSearch,
+          ),
+        ],
+      ),
+    );
+  }
+
   // 获取白名单数据
   getWhiteList() async {
     var queryData = await WhiteListUtil().queryWhiteList();
     setState(() {
-      whiteListRecord = queryData;
+      whiteListRecord = List.from(queryData);
     });
   }
 
-  // 白名单列表
-  handleDeleteWhiteList() {}
+  // 删除白名单
+  handleDeleteWhiteList(String imei) async {
+    int findIndex =  whiteListRecord.indexWhere((e) => e['imei'] == imei);
+    if (findIndex >= 0 && findIndex < whiteListRecord.length) {
+      var removedItem = whiteListRecord[findIndex];
+      // 在 AnimatedList 中移除元素
+      whiteListGlobalKey.currentState!.removeItem(
+        findIndex,
+        (context, animation) => _buildItem(removedItem, animation, handleDeleteWhiteList, '1'),
+      );
+      // 从数据源中移除元素
+      whiteListRecord.removeAt(findIndex);
+    }
+    // await WhiteListUtil().deleteWhiteList(id);
+    // await getWhiteList();
+  }
 
   handleWhiteListHelp(MyColorScheme themeData) {
     showDialog(
@@ -84,6 +154,7 @@ class _WhiteListState extends State<WhiteList> {
                       callback: () {
                         Navigator.pop(context, "确定");
                       },
+                      width: 110,
                     )
                   ],
                 )
@@ -92,6 +163,69 @@ class _WhiteListState extends State<WhiteList> {
           ),
         );
       },
+    );
+  }
+
+  // 构建列表项
+  Widget _buildItem(Map<String, dynamic> item, Animation<double> animation, Function callback, String type) {
+    return SizeTransition(
+      sizeFactor: animation,
+      axisAlignment: 0.0,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 22),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Image(
+                  image: type == '1'
+                      ? const AssetImage('assets/images/wristband.png')
+                      : const AssetImage('assets/images/wristband-online.png'),
+                  width: 44,
+                  height: 44,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '佩戴人：${item['name']}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        'IMEI：${item['imei']}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            InkWell(
+              onTap: () {
+                callback(item['imei']);
+              },
+              child: Icon(
+                type == '1'
+                    ? Icons.do_disturb_on_outlined
+                    : Icons.add_circle_outline,
+                size: 20,
+                color: const Color.fromRGBO(153, 163, 174, 1),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -161,15 +295,8 @@ class _WhiteListState extends State<WhiteList> {
                       Animation<double> animation,
                     ) {
                       //添加列表项时会执行渐显动画
-                      return FadeTransition(
-                        opacity: animation,
-                        child: widgetPeopleRecord(
-                          themeData,
-                          index,
-                          '1',
-                          handleDeleteWhiteList,
-                        ),
-                      );
+                      final item = whiteListRecord[index];
+                      return _buildItem(item, animation, handleDeleteWhiteList, '1');
                     },
                   ),
                 ),
@@ -178,112 +305,7 @@ class _WhiteListState extends State<WhiteList> {
     );
   }
 
-  // 人员列表
-  Widget widgetPeopleRecord(MyColorScheme themeData, int index, String type,
-      GestureTapCallback callback) {
-    return Container(
-      key: ValueKey(index),
-      margin: const EdgeInsets.only(bottom: 22),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Image(
-                image: type == '1'
-                    ? const AssetImage('assets/images/wristband.png')
-                    : const AssetImage('assets/images/wristband-online.png'),
-                width: 44,
-                height: 44,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '佩戴人：${whiteListRecord[index]['name']}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'IMEI：${whiteListRecord[index]['imei']}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          InkWell(
-            onTap: callback,
-            child: Icon(
-              type == '1'
-                  ? Icons.do_disturb_on_outlined
-                  : Icons.add_circle_outline,
-              size: 20,
-              color: const Color.fromRGBO(153, 163, 174, 1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 初始状态
-  handleSearch() {
-    setState(() {
-      isSearching = true;
-    });
-  }
-
-  Widget widgetInitStatus(MyColorScheme themeData) {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '白名单',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Icon(
-                  Icons.help_outline,
-                  size: 16,
-                  color: Color.fromRGBO(153, 163, 174, 1),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 24,
-          ),
-          WidgetDefaultBtn(
-            name: '添加',
-            btnBgColor: themeData.btnBgColor,
-            callback: handleSearch,
-          ),
-        ],
-      ),
-    );
-  }
-
   // 搜索手环，添加白名单
-  handleAddWhiteList() {}
-
   Widget widgetSearchWristband(MyColorScheme themeData) {
     return Expanded(
       child: Column(
@@ -299,7 +321,7 @@ class _WhiteListState extends State<WhiteList> {
             ),
           ),
           const Padding(
-            padding: EdgeInsets.only(top: 20, left: 20),
+            padding: EdgeInsets.only(top: 20, left: 20, bottom: 30),
             child: Text(
               '正在搜索附近的智能手环...',
               style: TextStyle(
@@ -310,31 +332,50 @@ class _WhiteListState extends State<WhiteList> {
           ),
           searchedWristbandRecord.isEmpty
               ? const WidgetEmpty()
-              : Container(
-                  width: 340,
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Expanded(
+              : Expanded(
+                  child:Container(
+                    width: 340,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: AnimatedList(
                       key: wristbandGlobalKey,
                       initialItemCount: searchedWristbandRecord.length,
                       itemBuilder: (
-                        BuildContext context,
-                        int index,
-                        Animation<double> animation,
-                      ) {
+                          BuildContext context,
+                          int index,
+                          Animation<double> animation,
+                          ) {
                         //添加列表项时会执行渐显动画
-                        return FadeTransition(
-                          opacity: animation,
-                          child: widgetPeopleRecord(
-                              themeData, index, '2', handleAddWhiteList),
-                        );
+                        final item = searchedWristbandRecord[index];
+                        return _buildItem(item, animation, handleAddWristband, '2');
                       },
                     ),
                   ),
-                ),
+              ),
         ],
       ),
     );
+  }
+
+  handleAddWristband(String imei) {
+    int findIndex =  searchedWristbandRecord.indexWhere((e) => e['imei'] == imei);
+    if (findIndex >= 0 && findIndex < searchedWristbandRecord.length) {
+      var removedItem = searchedWristbandRecord[findIndex];
+      // 先触发搜索列表中的移除动画
+      wristbandGlobalKey.currentState!.removeItem(
+        findIndex,
+            (context, animation) => _buildItem(removedItem, animation, handleAddWristband, '2'),
+      );
+      // 删除搜索列表中数据
+      setState(() {
+        searchedWristbandRecord.removeAt(findIndex);
+      });
+      // 将该数据添加到白名单
+      setState(() {
+        whiteListRecord.insert(0, removedItem);
+      });
+      // 执行列表过度动画
+      whiteListGlobalKey.currentState!.insertItem(0);
+    }
   }
 
   // 搜索状态

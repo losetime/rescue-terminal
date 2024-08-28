@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rescue_terminal/components/common/WaterRipple.dart';
+import 'package:rescue_terminal/components/water_ripple.dart';
 import 'dart:math';
 import 'package:rescue_terminal/views/rescueScope/util.dart';
 import 'package:sensors_plus/sensors_plus.dart';
