@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:rescue_terminal/views/setting/display.dart';
 import 'package:rescue_terminal/views/setting/communication.dart';
 import 'package:rescue_terminal/views/setting/update.dart';
+import 'package:provider/provider.dart';
+import 'package:rescue_terminal/store/theme_notifier.dart';
 
 class Setting extends StatefulWidget {
   const Setting({super.key});
@@ -14,7 +16,7 @@ class _SettingState extends State<Setting> {
   int _activeIndex = 0;
 
   // 菜单
-  Widget widgetMenu() {
+  Widget widgetMenu(MyColorScheme themeData) {
     final List<Map<String, dynamic>> menuOptions = [
       {'name': '显示设置'},
       {'name': '通讯配置'},
@@ -31,11 +33,11 @@ class _SettingState extends State<Setting> {
             height: 50,
             margin: const EdgeInsets.only(left: 14),
             padding: const EdgeInsets.only(right: 14),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
                   width: 0.5,
-                  color: Color.fromRGBO(177, 185, 209, 1),
+                  color: themeData.borderColor,
                 ),
               ),
             ),
@@ -57,38 +59,41 @@ class _SettingState extends State<Setting> {
     }
     return Container(
       width: 278,
-      decoration: const BoxDecoration(
+      height: double.infinity,
+      decoration: BoxDecoration(
         border: Border(
           right: BorderSide(
             width: 0.5,
-            color: Color.fromRGBO(177, 185, 209, 1),
+            color: themeData.borderColor,
           ),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 61,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 14),
-            decoration: const BoxDecoration(
-              border: BorderDirectional(
-                bottom: BorderSide(
-                  width: 0.5,
-                  color: Color.fromRGBO(177, 185, 209, 1),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 61,
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 14),
+              decoration: BoxDecoration(
+                border: BorderDirectional(
+                  bottom: BorderSide(
+                    width: 0.5,
+                    color: themeData.borderColor,
+                  ),
+                ),
+              ),
+              child: const Text(
+                '设置',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            child: const Text(
-              '设置',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          ...menuAssemble,
-        ],
+            ...menuAssemble,
+          ],
+        ),
       ),
     );
   }
@@ -116,9 +121,14 @@ class _SettingState extends State<Setting> {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    MyColorScheme themeData = themeNotifier.themeData;
     return Expanded(
       child: Row(
-        children: [widgetMenu(), widgetActivePage()],
+        children: [
+          widgetMenu(themeData),
+          widgetActivePage(),
+        ],
       ),
     );
   }

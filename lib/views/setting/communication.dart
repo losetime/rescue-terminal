@@ -54,8 +54,8 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
    */
   Widget createStepWidget() {
     return Container(
-      width: 650,
       height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
       decoration: BoxDecoration(
         border: Border.all(
           width: 0.5,
@@ -63,6 +63,7 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -229,9 +230,9 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.2), // 阴影颜色
-                        spreadRadius: 0, // 阴影扩散范围
-                        blurRadius: 4, // 模糊半径
-                        offset: const Offset(1, 2), // 阴影偏移量 (x, y)
+                        spreadRadius: 1, // 阴影扩散范围
+                        blurRadius: 2, // 模糊半径
+                        offset: const Offset(1, 1), // 阴影偏移量 (x, y)
                       ),
                     ],
                     textColor: themeData.defaultTextColor,

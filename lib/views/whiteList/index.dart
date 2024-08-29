@@ -232,11 +232,11 @@ class _WhiteListState extends State<WhiteList> {
   Widget widgetHaveFoundPeopleRecord(MyColorScheme themeData) {
     return Container(
       width: 278,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           right: BorderSide(
             width: 0.5,
-            color: Color.fromRGBO(177, 185, 209, 1),
+            color: themeData.borderColor,
           ),
         ),
       ),
@@ -247,11 +247,11 @@ class _WhiteListState extends State<WhiteList> {
             height: 61,
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 14),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: BorderDirectional(
                 bottom: BorderSide(
                   width: 0.5,
-                  color: Color.fromRGBO(177, 185, 209, 1),
+                  color: themeData.borderColor,
                 ),
               ),
             ),
@@ -306,7 +306,7 @@ class _WhiteListState extends State<WhiteList> {
   }
 
   // 搜索手环，添加白名单
-  Widget widgetSearchWristband(MyColorScheme themeData) {
+  Widget widgetSearchWristband() {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +384,7 @@ class _WhiteListState extends State<WhiteList> {
       children: [
         widgetHaveFoundPeopleRecord(themeData),
         isSearching
-            ? widgetSearchWristband(themeData)
+            ? widgetSearchWristband()
             : widgetInitStatus(themeData),
       ],
     );

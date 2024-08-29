@@ -1,5 +1,3 @@
-import 'dart:ui';
-import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:rescue_terminal/views/home/index.dart';
 import 'package:flutter/services.dart';
@@ -29,10 +27,6 @@ void main() async  {
       debug: true, // optional: 设置为false以禁用将日志打印到控制台 (default: true)
       ignoreSsl: true // option: 设置为false表示禁用HTTP链接 (default: false)
   );
-  // final ReceivePort port = ReceivePort();
-  // debugPrint('port-- ${port.sendPort}');
-  // // 注册 IsolateNameServer 端口
-  // IsolateNameServer.registerPortWithName(port.sendPort, 'downloader_send_port');
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeNotifier(),

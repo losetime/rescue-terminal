@@ -6,7 +6,7 @@ class MyColorScheme {
   final dynamic btnBgColor;
   final Color btnTextColor;
   final dynamic appBgColor;
-  final Color customColor1;
+  final Color borderColor;
 
   // 构造函数
   MyColorScheme({
@@ -14,7 +14,7 @@ class MyColorScheme {
     required this.btnBgColor,
     required this.btnTextColor,
     required this.appBgColor,
-    this.customColor1 = Colors.redAccent,
+    required this.borderColor,
   });
 }
 
@@ -37,6 +37,7 @@ final MyColorScheme _lightColorScheme = MyColorScheme(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   ),
+  borderColor: const Color.fromRGBO(177, 185, 209, 1),
 );
 
 final MyColorScheme _darkColorScheme = MyColorScheme(
@@ -58,6 +59,7 @@ final MyColorScheme _darkColorScheme = MyColorScheme(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   ),
+  borderColor: const Color.fromRGBO(88, 90, 94, 1),
 );
 
 class ThemeNotifier extends ChangeNotifier {

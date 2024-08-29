@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:rescue_terminal/views/rescueScope/util.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:rescue_terminal/components/widget_default_btn.dart';
+import 'package:provider/provider.dart';
+import 'package:rescue_terminal/store/theme_notifier.dart';
 
 class RescueScope extends StatefulWidget {
   const RescueScope({super.key});
@@ -13,8 +15,9 @@ class RescueScope extends StatefulWidget {
 }
 
 class _RescueScopeState extends State<RescueScope>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final globalKey = GlobalKey<AnimatedListState>();
+  final GlobalKey<WaterRippleState> rippleKey = GlobalKey<WaterRippleState>();
 
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -24,6 +27,9 @@ class _RescueScopeState extends State<RescueScope>
   double _targetAngle = 0.0;
   dynamic _gyroscopeEvent;
 
+  // 是否初始状态
+  bool initStatus = true;
+  // 搜索状态
   bool isSearching = false;
 
   @override
@@ -110,11 +116,21 @@ class _RescueScopeState extends State<RescueScope>
     });
   }
 
+  // 进入搜救页面
+  handleEnterRescue() {
+    setState(() {
+      initStatus = false;
+      isSearching = true;
+    });
+  }
+
   // 开始搜救
   handleStartRescue() {
     setState(() {
       isSearching = true;
     });
+    // 开始动画
+    rippleKey.currentState?.startAnimation();
   }
 
   // 停止搜救
@@ -122,6 +138,8 @@ class _RescueScopeState extends State<RescueScope>
     setState(() {
       isSearching = false;
     });
+    // 停止动画
+    rippleKey.currentState?.stopAnimation();
   }
 
   // 初始状态
@@ -141,7 +159,7 @@ class _RescueScopeState extends State<RescueScope>
         ),
         WidgetDefaultBtn(
           name: '开始搜救',
-          callback: handleStartRescue,
+          callback: handleEnterRescue,
           width: 110,
         ),
       ],
@@ -160,14 +178,14 @@ class _RescueScopeState extends State<RescueScope>
         avatar: 'assets/images/construction-personnel.png'),
   ];
 
-  Widget widgetHaveFoundPeopleRecord() {
+  Widget widgetHaveFoundPeopleRecord(MyColorScheme themeData) {
     return Container(
       width: 278,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           right: BorderSide(
             width: 0.5,
-            color: Color.fromRGBO(177, 185, 209, 1),
+            color: themeData.borderColor,
           ),
         ),
       ),
@@ -178,17 +196,17 @@ class _RescueScopeState extends State<RescueScope>
             height: 61,
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 14),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: BorderDirectional(
                 bottom: BorderSide(
                   width: 0.5,
-                  color: Color.fromRGBO(177, 185, 209, 1),
+                  color: themeData.borderColor,
                 ),
               ),
             ),
-            child: const Text(
-              '正在搜索附近人员...',
-              style: TextStyle(
+            child: Text(
+              isSearching ? '正在搜索附近人员...' : '已停止搜救',
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -196,11 +214,28 @@ class _RescueScopeState extends State<RescueScope>
           const Padding(
             padding: EdgeInsets.only(
               top: 14,
+              bottom: 14,
               left: 14,
             ),
-            child: Text(
-              '已发现3人',
-            ),
+            child: Row(
+              children: [
+                Text(
+                  '已发现',
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  child: Text(
+                    '3',
+                    style: TextStyle(
+                      color: Color.fromRGBO(245, 97, 75, 1),
+                    ),
+                  ),
+                ),
+                Text(
+                  '人',
+                ),
+              ],
+            )
           ),
           Expanded(
             child: AnimatedList(
@@ -324,7 +359,6 @@ class _RescueScopeState extends State<RescueScope>
     List<Widget> scanningPeople = [];
     for (var i = 0; i < peopleRecord.length; i++) {
       double value = Random().nextDouble() * 100;
-      // print(value);
       scanningPeople.add(Positioned(
         top: value,
         child: ScaleTransition(
@@ -349,13 +383,13 @@ class _RescueScopeState extends State<RescueScope>
             padding: const EdgeInsets.all(20),
             width: double.infinity,
             height: double.infinity,
-            child: const WaterRipple(),
+            child: WaterRipple(key: rippleKey),
           ),
           AnimatedBuilder(
             animation: _maskPainterAnimation,
             builder: (context, child) {
               return Transform.rotate(
-                // angle: 0.5, // 旋转角度（弧度）
+                // 旋转角度（弧度）
                 angle: _maskPainterAnimation.value,
                 child: CustomPaint(
                   size: const Size(double.infinity, double.infinity),
@@ -369,7 +403,7 @@ class _RescueScopeState extends State<RescueScope>
           Positioned(
             bottom: 40,
             child: WidgetDefaultBtn(
-              name: '停止搜救',
+              name: isSearching ? '停止搜救' : '开始搜救',
               btnBgColor: const LinearGradient(
                 colors: [
                   Color.fromRGBO(255, 171, 119, 1),
@@ -379,7 +413,7 @@ class _RescueScopeState extends State<RescueScope>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-              callback: handleStopRescue,
+              callback: isSearching ? handleStopRescue : handleStartRescue,
               width: 110,
             ),
           ),
@@ -390,10 +424,10 @@ class _RescueScopeState extends State<RescueScope>
   }
 
   // 搜索状态
-  Widget widgetRescueStatus() {
+  Widget widgetRescueStatus(MyColorScheme themeData) {
     return Row(
       children: [
-        widgetHaveFoundPeopleRecord(),
+        widgetHaveFoundPeopleRecord(themeData),
         widgetScanningRadar(),
       ],
     );
@@ -401,10 +435,16 @@ class _RescueScopeState extends State<RescueScope>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    MyColorScheme themeData = themeNotifier.themeData;
     return Expanded(
-      child: isSearching
-          ? widgetRescueStatus()
-          : widgetInitStatus(),
+      child: initStatus
+          ? widgetInitStatus()
+          : widgetRescueStatus(themeData),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;  // 控制是否保持页面状态
 }

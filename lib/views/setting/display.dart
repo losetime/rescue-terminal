@@ -21,8 +21,9 @@ class _DisplaySettingState extends State<DisplaySetting> {
     List<Widget> themeAssemble = [];
     for (int i = 0; i < themeOptions.length; i++) {
       themeAssemble.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 34),
+        Container(
+          width: 240,
+          margin: const EdgeInsets.only(left: 30),
           child: Column(
             children: [
               InkWell(
@@ -34,8 +35,9 @@ class _DisplaySettingState extends State<DisplaySetting> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 15),
+                padding: const EdgeInsets.only(top: 10),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       themeOptions[i]['name'],
@@ -57,6 +59,7 @@ class _DisplaySettingState extends State<DisplaySetting> {
             ],
           ),
         ),
+
       );
     }
     return Expanded(
@@ -64,17 +67,18 @@ class _DisplaySettingState extends State<DisplaySetting> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.only(top: 14, left: 30),
+            padding: EdgeInsets.only(top: 14, left: 30, bottom: 39),
             child: Text('显示设置'),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 39, left: 30),
-            child: Row(
+          SizedBox(
+            width: 800,
+            child: Wrap(
+              runSpacing: 30, // 纵轴（垂直）方向间距
               children: [
                 ...themeAssemble,
               ],
             ),
-          ),
+          )
         ],
       ),
     );

@@ -26,44 +26,52 @@ class _HomeState extends State<Home> {
   int _activeIndex = 0;
   List<Menu> menuOptions = [
     Menu(
-        name: '搜救范围',
-        img: 'assets/images/rescue_scope.png',
-        activeImg: 'assets/images/rescue_scope.png'),
+      name: '搜救范围',
+      img: 'assets/images/rescue_scope.png',
+      activeImg: 'assets/images/rescue_scope.png',
+    ),
     Menu(
-        name: '白名单',
-        img: 'assets/images/white_list.png',
-        activeImg: 'assets/images/white_list.png'),
+      name: '白名单',
+      img: 'assets/images/white_list.png',
+      activeImg: 'assets/images/white_list.png',
+    ),
     Menu(
-        name: '设置',
-        img: 'assets/images/setting.png',
-        activeImg: 'assets/images/setting.png'),
-    Menu(
-        name: '删除表',
-        img: 'assets/images/setting.png',
-        activeImg: 'assets/images/setting.png'),
-    Menu(
-        name: '插入数据',
-        img: 'assets/images/setting.png',
-        activeImg: 'assets/images/setting.png'),
+      name: '设置',
+      img: 'assets/images/setting.png',
+      activeImg: 'assets/images/setting.png',
+    ),
+    // Menu(
+    //   name: '删除表',
+    //   img: 'assets/images/setting.png',
+    //   activeImg: 'assets/images/setting.png',
+    // ),
+    // Menu(
+    //   name: '插入数据',
+    //   img: 'assets/images/setting.png',
+    //   activeImg: 'assets/images/setting.png',
+    // ),
   ];
 
   // 选择菜单
   handleSelectMenu(int index) async {
-    if (index == 3) {
-      final dbHelper = DatabaseHelper();
-      // 删除表并重新创建
-      await dbHelper.dropTable('white_list');
-    } else if (index == 4) {
-      await WhiteListUtil().insertWhiteList();
-    } else {
-      setState(() {
-        _activeIndex = index;
-      });
-    }
+    // if (index == 3) {
+    //   final dbHelper = DatabaseHelper();
+    //   // 删除表并重新创建
+    //   await dbHelper.dropTable('white_list');
+    // } else if (index == 4) {
+    //   await WhiteListUtil().insertWhiteList();
+    // } else {
+    //   setState(() {
+    //     _activeIndex = index;
+    //   });
+    // }
+    setState(() {
+      _activeIndex = index;
+    });
   }
 
   // 导航菜单
-  Widget widgetMenu() {
+  Widget widgetMenu(MyColorScheme themeData) {
     List<Widget> getMenuWidget = [];
     for (int i = 0; i < menuOptions.length; i++) {
       getMenuWidget.add(
@@ -90,11 +98,11 @@ class _HomeState extends State<Home> {
     }
     return Container(
       width: 120,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           right: BorderSide(
             width: 0.5,
-            color: Color.fromRGBO(177, 185, 209, 1),
+            color: themeData.borderColor,
           ),
         ),
       ),
@@ -121,6 +129,15 @@ class _HomeState extends State<Home> {
       default:
         return const RescueScope();
     }
+
+    // return IndexedStack(
+    //   index: _activeIndex,
+    //   children: const [
+    //     RescueScope(),
+    //     WhiteList(),
+    //     Setting(),
+    //   ],
+    // );
   }
 
   @override
@@ -142,8 +159,8 @@ class _HomeState extends State<Home> {
         ),
         child: Row(
           children: [
-            widgetMenu(),
-            widgetActivePage(),
+            widgetMenu(themeData),
+            widgetActivePage()
           ],
         ),
       ),

@@ -8,10 +8,10 @@ class WaterRipple extends StatefulWidget {
   const WaterRipple({super.key, this.count = 3, this.color = const Color.fromRGBO(244, 139, 66, 1)});
 
   @override
-  State<WaterRipple> createState() => _WaterRippleState();
+  State<WaterRipple> createState() => WaterRippleState();
 }
 
-class _WaterRippleState extends State<WaterRipple>
+class WaterRippleState extends State<WaterRipple>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -21,6 +21,16 @@ class _WaterRippleState extends State<WaterRipple>
     AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))
       ..repeat();
     super.initState();
+  }
+
+  void startAnimation() {
+    print('开始动画');
+    _controller.repeat();
+  }
+
+  void stopAnimation() {
+    print('停止动画');
+    _controller.stop();
   }
 
   @override

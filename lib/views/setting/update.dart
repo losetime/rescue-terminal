@@ -11,6 +11,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
+// import 'package:install_plugin/install_plugin.dart';
 
 class UpdateSetting extends StatefulWidget {
   const UpdateSetting({super.key});
@@ -24,7 +26,9 @@ class _UpdateSettingState extends State<UpdateSetting> {
   dynamic updateInfo = {};
   bool isNeedUpdate = false;
   bool startDownload = false;
-  double downloadProgress = 0.0;
+  int downloadProgress = 0;
+  String downloadTaskId = '';
+  String filePath = '';
 
   dynamic dialogSetState;
 
@@ -46,17 +50,18 @@ class _UpdateSettingState extends State<UpdateSetting> {
   /*
   * @author: wwp
   * @createTime: 2024/8/28 17:55
-  * @description: 使用 IsolateNameServer 实现隔离通信
+  * @description: 使用 IsolateNameServer 实现隔离通信,进行后台下载
   * @param
   * @return
   */
   createIsolateNameServer() {
-    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+    IsolateNameServer.registerPortWithName(
+        _port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
       dialogSetState(() {
-        downloadProgress = data[2] / 100;
+        downloadProgress = data[2];
       });
-      if(data[2] == 100) {
+      if (data[2] == 100) {
         handleInstall();
       }
     });
@@ -67,7 +72,8 @@ class _UpdateSettingState extends State<UpdateSetting> {
   // 这通常用于回调函数或其他以反射、插件、或者框架形式调用的方法，它们的调用可能不会被静态分析器发现。
   @pragma('vm:entry-point')
   static void downloadCallback(String id, status, int progress) {
-    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    final SendPort? send =
+        IsolateNameServer.lookupPortByName('downloader_send_port');
     send?.send([id, status, progress]);
   }
 
@@ -86,7 +92,6 @@ class _UpdateSettingState extends State<UpdateSetting> {
     final response = await commonApi.apiGetAppPackageInfo();
     updateInfo = response;
     final String serviceVersion = response['version'];
-    Fluttertoast.showToast(msg: serviceVersion);
     // 比较版本
     if (clientVersion != serviceVersion) {
       setState(() {
@@ -144,13 +149,14 @@ class _UpdateSettingState extends State<UpdateSetting> {
     if (status.isGranted) {
       final directoryPath = await getDownloadDirectory();
       if (directoryPath == null) return;
-      String fileName = 'rescue_terminal.apk';
-      final file = File('$directoryPath/$fileName');
+      String fileName = 'app-release.apk';
+      filePath = '$directoryPath/$fileName';
+      final file = File(filePath);
       if (await file.exists()) {
         await file.delete();
       }
-      final taskId = await FlutterDownloader.enqueue(
-        url: 'http://192.168.35.50:8080/whatsapp.apk',
+      downloadTaskId = (await FlutterDownloader.enqueue(
+        url: 'http://192.168.35.50:8080/app-release.apk',
         // 保存的目录路径，确保是公共存储路径
         savedDir: directoryPath,
         // 文件名
@@ -161,7 +167,7 @@ class _UpdateSettingState extends State<UpdateSetting> {
         openFileFromNotification: true,
         // 设置为 true，表示保存到公共存储
         saveInPublicStorage: true,
-      );
+      ))!;
     } else {
       Fluttertoast.showToast(msg: '没有存储权限');
     }
@@ -174,8 +180,16 @@ class _UpdateSettingState extends State<UpdateSetting> {
   * @param
   * @return
   */
-  handleInstall() {
+  handleInstall() async {
     debugPrint('开始安装');
+    FlutterDownloader.open(taskId: downloadTaskId);
+    SystemNavigator.pop();
+    // final res = await InstallPlugin.install(filePath);
+    // if(res['isSuccess']) {
+    //   Fluttertoast.showToast(msg: '安装成功');
+    // } else {
+    //   Fluttertoast.showToast(msg: '安装失败，请重试');
+    // }
   }
 
   /*
@@ -185,7 +199,7 @@ class _UpdateSettingState extends State<UpdateSetting> {
   * @param
   * @return
   */
-  showUpdateModal(BuildContext context, themeData) {
+  showUpdateModal(BuildContext context, themeData, themeStatus) {
     List<Widget> widgetVersion = [];
     final content = updateInfo['content'];
     for (int i = 0; i < content.length; i++) {
@@ -263,25 +277,44 @@ class _UpdateSettingState extends State<UpdateSetting> {
                                   backgroundColor: Colors.grey[200],
                                   valueColor:
                                       const AlwaysStoppedAnimation(Colors.blue),
-                                  value: downloadProgress,
+                                  value: downloadProgress / 100,
                                 ),
                               ),
-                              Text('${downloadProgress * 100}%')
-                              // WidgetDefaultBtn(
-                              //   name: '取消',
-                              //   btnBgColor: themeData.btnBgColor,
-                              //   callback: () {
-                              //     Navigator.pop(context, "确定");
-                              //   },
-                              //   height: 30,
-                              //   width: 80,
-                              //   fontSize: 12,
-                              // )
+                              Text('$downloadProgress%'),
                             ],
                           )
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              WidgetDefaultBtn(
+                                name: '取消',
+                                btnBgColor: const LinearGradient(
+                                  colors: [
+                                    Color.fromRGBO(229, 234, 239, 1),
+                                    Color.fromRGBO(200, 213, 223, 1),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                                callback: () {
+                                  Navigator.pop(context, "确定");
+                                },
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withOpacity(0.2), // 阴影颜色
+                                    spreadRadius: 1, // 阴影扩散范围
+                                    blurRadius: 2, // 模糊半径
+                                    offset: const Offset(1, 1), // 阴影偏移量 (x, y)
+                                  ),
+                                ],
+                                textColor: themeData.defaultTextColor,
+                                border: themeStatus == 'dark',
+                                height: 30,
+                                width: 80,
+                                fontSize: 12,
+                              ),
+                              const SizedBox(width: 14),
                               WidgetDefaultBtn(
                                 name: '更新',
                                 btnBgColor: themeData.btnBgColor,
@@ -293,7 +326,7 @@ class _UpdateSettingState extends State<UpdateSetting> {
                                 fontSize: 12,
                               ),
                             ],
-                          )
+                          ),
                   ],
                 ),
               ),
@@ -305,7 +338,8 @@ class _UpdateSettingState extends State<UpdateSetting> {
   }
 
   // 默认展示配置
-  Widget widgetConfigurationDisplay(BuildContext context, themeData) {
+  Widget widgetConfigurationDisplay(
+      BuildContext context, themeData, themeStatus) {
     return Expanded(
       child: SizedBox(
         width: double.infinity,
@@ -334,7 +368,7 @@ class _UpdateSettingState extends State<UpdateSetting> {
               child: WidgetDefaultBtn(
                 name: '立即更新',
                 callback: () {
-                  showUpdateModal(context, themeData);
+                  showUpdateModal(context, themeData, themeStatus);
                 },
                 width: 120,
               ),
@@ -349,6 +383,7 @@ class _UpdateSettingState extends State<UpdateSetting> {
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     MyColorScheme themeData = themeNotifier.themeData;
+    String themeStatus = themeNotifier.themeStatus;
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +392,7 @@ class _UpdateSettingState extends State<UpdateSetting> {
             padding: EdgeInsets.only(top: 14, left: 30, bottom: 30),
             child: Text('版本更新'),
           ),
-          widgetConfigurationDisplay(context, themeData),
+          widgetConfigurationDisplay(context, themeData, themeStatus),
         ],
       ),
     );
