@@ -123,13 +123,11 @@ class _SettingState extends State<Setting> {
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     MyColorScheme themeData = themeNotifier.themeData;
-    return Expanded(
-      child: Row(
-        children: [
-          widgetMenu(themeData),
-          widgetActivePage(),
-        ],
-      ),
+    return Row(
+      children: [
+        widgetMenu(themeData),
+        widgetActivePage()
+      ],
     );
   }
 }

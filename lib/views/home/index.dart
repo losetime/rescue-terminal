@@ -24,6 +24,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _activeIndex = 0;
+  final PageController _pageController = PageController();
   List<Menu> menuOptions = [
     Menu(
       name: '搜救范围',
@@ -65,9 +66,11 @@ class _HomeState extends State<Home> {
     //     _activeIndex = index;
     //   });
     // }
-    setState(() {
-      _activeIndex = index;
-    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   // 导航菜单
@@ -119,25 +122,18 @@ class _HomeState extends State<Home> {
 
   // 对应页面
   Widget widgetActivePage() {
-    switch (_activeIndex) {
-      case 0:
-        return const RescueScope();
-      case 1:
-        return const WhiteList();
-      case 2:
-        return const Setting();
-      default:
-        return const RescueScope();
-    }
-
-    // return IndexedStack(
-    //   index: _activeIndex,
-    //   children: const [
-    //     RescueScope(),
-    //     WhiteList(),
-    //     Setting(),
-    //   ],
-    // );
+    return PageView(
+      controller: _pageController,
+      // 禁用滑动切换
+      physics: const NeverScrollableScrollPhysics(),
+      // 改为上下滑动
+      scrollDirection: Axis.vertical,
+      children: const [
+        RescueScope(), // 使用 AutomaticKeepAliveClientMixin
+        WhiteList(),
+        Setting(),
+      ],
+    );
   }
 
   @override
@@ -160,7 +156,9 @@ class _HomeState extends State<Home> {
         child: Row(
           children: [
             widgetMenu(themeData),
-            widgetActivePage()
+            Expanded(
+              child: widgetActivePage(),
+            )
           ],
         ),
       ),

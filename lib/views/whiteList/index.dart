@@ -95,16 +95,20 @@ class _WhiteListState extends State<WhiteList> {
 
   // 删除白名单
   handleDeleteWhiteList(String imei) async {
-    int findIndex =  whiteListRecord.indexWhere((e) => e['imei'] == imei);
+    int findIndex = whiteListRecord.indexWhere((e) => e['imei'] == imei);
     if (findIndex >= 0 && findIndex < whiteListRecord.length) {
       var removedItem = whiteListRecord[findIndex];
       // 在 AnimatedList 中移除元素
       whiteListGlobalKey.currentState!.removeItem(
         findIndex,
-        (context, animation) => _buildItem(removedItem, animation, handleDeleteWhiteList, '1'),
+        (context, animation) =>
+            _buildItem(removedItem, animation, handleDeleteWhiteList, '1'),
       );
       // 从数据源中移除元素
-      whiteListRecord.removeAt(findIndex);
+      setState(() {
+        whiteListRecord.removeAt(findIndex);
+      });
+
     }
     // await WhiteListUtil().deleteWhiteList(id);
     // await getWhiteList();
@@ -167,7 +171,8 @@ class _WhiteListState extends State<WhiteList> {
   }
 
   // 构建列表项
-  Widget _buildItem(Map<String, dynamic> item, Animation<double> animation, Function callback, String type) {
+  Widget _buildItem(Map<String, dynamic> item, Animation<double> animation,
+      Function callback, String type) {
     return SizeTransition(
       sizeFactor: animation,
       axisAlignment: 0.0,
@@ -296,7 +301,8 @@ class _WhiteListState extends State<WhiteList> {
                     ) {
                       //添加列表项时会执行渐显动画
                       final item = whiteListRecord[index];
-                      return _buildItem(item, animation, handleDeleteWhiteList, '1');
+                      return _buildItem(
+                          item, animation, handleDeleteWhiteList, '1');
                     },
                   ),
                 ),
@@ -333,37 +339,40 @@ class _WhiteListState extends State<WhiteList> {
           searchedWristbandRecord.isEmpty
               ? const WidgetEmpty()
               : Expanded(
-                  child:Container(
+                  child: Container(
                     width: 340,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: AnimatedList(
                       key: wristbandGlobalKey,
                       initialItemCount: searchedWristbandRecord.length,
                       itemBuilder: (
-                          BuildContext context,
-                          int index,
-                          Animation<double> animation,
-                          ) {
+                        BuildContext context,
+                        int index,
+                        Animation<double> animation,
+                      ) {
                         //添加列表项时会执行渐显动画
                         final item = searchedWristbandRecord[index];
-                        return _buildItem(item, animation, handleAddWristband, '2');
+                        return _buildItem(
+                            item, animation, handleAddWristband, '2');
                       },
                     ),
                   ),
-              ),
+                ),
         ],
       ),
     );
   }
 
   handleAddWristband(String imei) {
-    int findIndex =  searchedWristbandRecord.indexWhere((e) => e['imei'] == imei);
+    int findIndex =
+        searchedWristbandRecord.indexWhere((e) => e['imei'] == imei);
     if (findIndex >= 0 && findIndex < searchedWristbandRecord.length) {
       var removedItem = searchedWristbandRecord[findIndex];
       // 先触发搜索列表中的移除动画
       wristbandGlobalKey.currentState!.removeItem(
         findIndex,
-            (context, animation) => _buildItem(removedItem, animation, handleAddWristband, '2'),
+        (context, animation) =>
+            _buildItem(removedItem, animation, handleAddWristband, '2'),
       );
       // 删除搜索列表中数据
       setState(() {
@@ -374,7 +383,9 @@ class _WhiteListState extends State<WhiteList> {
         whiteListRecord.insert(0, removedItem);
       });
       // 执行列表过度动画
-      whiteListGlobalKey.currentState!.insertItem(0);
+      if (whiteListGlobalKey.currentState != null) {
+        whiteListGlobalKey.currentState!.insertItem(0);
+      }
     }
   }
 
@@ -383,9 +394,7 @@ class _WhiteListState extends State<WhiteList> {
     return Row(
       children: [
         widgetHaveFoundPeopleRecord(themeData),
-        isSearching
-            ? widgetSearchWristband()
-            : widgetInitStatus(themeData),
+        isSearching ? widgetSearchWristband() : widgetInitStatus(themeData),
       ],
     );
   }
@@ -394,9 +403,10 @@ class _WhiteListState extends State<WhiteList> {
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     MyColorScheme themeData = themeNotifier.themeData;
-    return Expanded(
-      child: widgetRescueStatus(themeData),
-    );
+    return widgetRescueStatus(themeData);
+    // return Expanded(
+    //   child: widgetRescueStatus(themeData),
+    // );
   }
 
   @override

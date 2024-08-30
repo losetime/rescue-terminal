@@ -29,6 +29,7 @@ class _RescueScopeState extends State<RescueScope>
 
   // 是否初始状态
   bool initStatus = true;
+
   // 搜索状态
   bool isSearching = false;
 
@@ -144,25 +145,26 @@ class _RescueScopeState extends State<RescueScope>
 
   // 初始状态
   Widget widgetInitStatus() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Image(
-          image: AssetImage('assets/images/empty-light.png'),
-          width: 269,
-          height: 82,
-          fit: BoxFit.fill,
-        ),
-        const SizedBox(
-          height: 24,
-        ),
-        WidgetDefaultBtn(
-          name: '开始搜救',
-          callback: handleEnterRescue,
-          width: 110,
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Image(
+            image: AssetImage('assets/images/empty-light.png'),
+            width: 269,
+            height: 82,
+            fit: BoxFit.fill,
+          ),
+          const SizedBox(
+            height: 24,
+          ),
+          WidgetDefaultBtn(
+            name: '开始搜救',
+            callback: handleEnterRescue,
+            width: 110,
+          ),
+        ],
+      ),
     );
   }
 
@@ -212,31 +214,30 @@ class _RescueScopeState extends State<RescueScope>
             ),
           ),
           const Padding(
-            padding: EdgeInsets.only(
-              top: 14,
-              bottom: 14,
-              left: 14,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  '已发现',
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 5),
-                  child: Text(
-                    '3',
-                    style: TextStyle(
-                      color: Color.fromRGBO(245, 97, 75, 1),
+              padding: EdgeInsets.only(
+                top: 14,
+                bottom: 14,
+                left: 14,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '已发现',
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 5),
+                    child: Text(
+                      '3',
+                      style: TextStyle(
+                        color: Color.fromRGBO(245, 97, 75, 1),
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  '人',
-                ),
-              ],
-            )
-          ),
+                  Text(
+                    '人',
+                  ),
+                ],
+              )),
           Expanded(
             child: AnimatedList(
               key: globalKey,
@@ -438,13 +439,14 @@ class _RescueScopeState extends State<RescueScope>
     super.build(context);
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     MyColorScheme themeData = themeNotifier.themeData;
-    return Expanded(
-      child: initStatus
-          ? widgetInitStatus()
-          : widgetRescueStatus(themeData),
-    );
+    return initStatus ? widgetInitStatus() : widgetRescueStatus(themeData);
+    // return Expanded(
+    //   child: initStatus
+    //       ? widgetInitStatus()
+    //       : widgetRescueStatus(themeData),
+    // );
   }
 
   @override
-  bool get wantKeepAlive => true;  // 控制是否保持页面状态
+  bool get wantKeepAlive => true; // 控制是否保持页面状态
 }

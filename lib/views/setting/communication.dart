@@ -305,8 +305,6 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    // MyColorScheme themeData = themeNotifier.themeData;
-    // String themeStatus = themeNotifier.themeStatus;
     themeData = themeNotifier.themeData;
     themeStatus = themeNotifier.themeStatus;
     return Expanded(
@@ -337,5 +335,31 @@ class _CommunicationSettingState extends State<CommunicationSetting> {
         ],
       ),
     );
+    // return Column(
+    //   crossAxisAlignment: CrossAxisAlignment.start,
+    //   children: [
+    //     const Padding(
+    //       padding: EdgeInsets.only(top: 14, left: 30, bottom: 30),
+    //       child: Text('通讯配置'),
+    //     ),
+    //     configuring
+    //         ? Center(
+    //       child: SingleChildScrollView(
+    //         child: SizedBox(
+    //           width: double.infinity,
+    //           child: Column(
+    //             children: [
+    //               createStepWidget(),
+    //               isAdmin
+    //                   ? createCommumicationFormWidget()
+    //                   : createVerifyAdminFormWidget(),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     )
+    //         : widgetConfigurationDisplay()
+    //   ],
+    // );
   }
 }
