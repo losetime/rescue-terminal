@@ -173,12 +173,34 @@ class _RescueScopeState extends State<RescueScope>
     User(
         id: '#10001',
         name: '李云龙',
-        avatar: 'assets/images/construction-personnel.png'),
+        avatar: 'assets/images/construction-personnel.png',
+        position: const Offset(0, 0)),
     User(
         id: '#10001',
         name: '楚云飞',
-        avatar: 'assets/images/construction-personnel.png'),
+        avatar: 'assets/images/construction-personnel.png',
+        position: const Offset(0, 0)),
   ];
+
+  List<User> haveScanPeopleRecord = [
+    // User(
+    //   id: '#10001',
+    //   name: '张雨廷',
+    //   avatar: 'assets/images/construction-personnel.png',
+    //   location: [0, 0],
+    // ),
+  ];
+
+  // User(
+  // id: '#10002',
+  // name: '李逵',
+  // avatar: 'assets/images/construction-personnel.png',
+  // ),
+  // User(
+  // id: '#10003',
+  // name: '宋飞',
+  // avatar: 'assets/images/construction-personnel.png',
+  // ),
 
   Widget widgetHaveFoundPeopleRecord(MyColorScheme themeData) {
     return Container(
@@ -213,31 +235,45 @@ class _RescueScopeState extends State<RescueScope>
               ),
             ),
           ),
+          WidgetDefaultBtn(
+            name: '添加人员',
+            btnBgColor: const LinearGradient(
+              colors: [
+                Color.fromRGBO(101, 110, 126, 1),
+                Color.fromRGBO(101, 110, 126, 1)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            callback: handleAppendScanPeople,
+            width: 110,
+          ),
           const Padding(
-              padding: EdgeInsets.only(
-                top: 14,
-                bottom: 14,
-                left: 14,
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    '已发现',
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 5),
-                    child: Text(
-                      '3',
-                      style: TextStyle(
-                        color: Color.fromRGBO(245, 97, 75, 1),
-                      ),
+            padding: EdgeInsets.only(
+              top: 14,
+              bottom: 14,
+              left: 14,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  '已发现',
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  child: Text(
+                    '3',
+                    style: TextStyle(
+                      color: Color.fromRGBO(245, 97, 75, 1),
                     ),
                   ),
-                  Text(
-                    '人',
-                  ),
-                ],
-              )),
+                ),
+                Text(
+                  '人',
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: AnimatedList(
               key: globalKey,
@@ -340,69 +376,102 @@ class _RescueScopeState extends State<RescueScope>
     );
   }
 
-  // 扫描雷达
-  Widget widgetScanningRadar() {
-    List<User> peopleRecord = [
-      User(
-          id: '#10001',
-          name: '张雨廷',
-          avatar: 'assets/images/construction-personnel.png'),
-      User(
+  /*
+  * @author: wwp
+  * @createTime: 2024/8/30 16:00
+  * @description: 向雷达图添加扫描到的人员
+  * @param
+  * @return
+  */
+  handleAppendScanPeople() {
+    // double top = Random().nextDouble() * 100;
+    // double left = Random().nextDouble() * 100;
+    final size = MediaQuery.of(context).size;
+    final position = getRandomPositionInSector(size);
+    setState(() {
+      haveScanPeopleRecord.add(
+        User(
           id: '#10002',
           name: '李逵',
-          avatar: 'assets/images/construction-personnel.png'),
-      User(
-          id: '#10003',
-          name: '宋飞',
-          avatar: 'assets/images/construction-personnel.png'),
-    ];
-    // 雷达扫描动态添加扫描人员
-    List<Widget> scanningPeople = [];
-    for (var i = 0; i < peopleRecord.length; i++) {
-      double value = Random().nextDouble() * 100;
-      scanningPeople.add(Positioned(
-        top: value,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: const Column(
-            children: [
-              Text('#123'),
-              Text('张云飞'),
-              Image(
-                image: AssetImage('assets/images/construction-personnel.png'),
-              ),
-            ],
-          ),
+          avatar: 'assets/images/construction-personnel.png',
+          position: position,
         ),
-      ));
-    }
+      );
+    });
+  }
+
+  Offset getRandomPositionInSector(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = min(size.width, size.height) / 2 - 20; // 留些边距
+    final angle = Random().nextDouble() * 285 * pi / 180; // 285度扇形
+    final r = sqrt(Random().nextDouble()) * radius; // 使分布更均匀
+    return center + Offset(r * cos(angle), r * sin(angle));
+  }
+
+  // 扫描雷达
+  Widget widgetScanningRadar() {
     return Expanded(
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            width: double.infinity,
-            height: double.infinity,
-            child: WaterRipple(key: rippleKey),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: WaterRipple(key: rippleKey),
+                    ),
+                    // AnimatedBuilder(
+                    //   animation: _maskPainterAnimation,
+                    //   builder: (context, child) {
+                    //     return Transform.rotate(
+                    //       // 旋转角度（弧度）
+                    //       angle: _maskPainterAnimation.value,
+                    //       child: CustomPaint(
+                    //         // size: const Size(double.infinity, double.infinity),
+                    //         size: Size(constraints.maxWidth, constraints.maxHeight),
+                    //         painter: MaskPainter(
+                    //           maskColor: const Color.fromRGBO(203, 215, 225, 1),
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
+                    ...haveScanPeopleRecord.map(
+                      (user) {
+                        return Positioned(
+                          left: user.position.dx,
+                          top: user.position.dy,
+                          child: ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: Column(
+                              children: [
+                                Text(user.id,
+                                    style: const TextStyle(fontSize: 10)),
+                                Text(user.name,
+                                    style: const TextStyle(fontSize: 10)),
+                                Image(
+                                  image: AssetImage(user.avatar),
+                                  width: 33,
+                                  height: 33,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ],
+                );
+              },
+            ),
           ),
-          AnimatedBuilder(
-            animation: _maskPainterAnimation,
-            builder: (context, child) {
-              return Transform.rotate(
-                // 旋转角度（弧度）
-                angle: _maskPainterAnimation.value,
-                child: CustomPaint(
-                  size: const Size(double.infinity, double.infinity),
-                  painter: MaskPainter(
-                    maskColor: const Color.fromRGBO(203, 215, 225, 1),
-                  ),
-                ),
-              );
-            },
-          ),
-          Positioned(
-            bottom: 40,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 40),
             child: WidgetDefaultBtn(
               name: isSearching ? '停止搜救' : '开始搜救',
               btnBgColor: const LinearGradient(
@@ -418,7 +487,6 @@ class _RescueScopeState extends State<RescueScope>
               width: 110,
             ),
           ),
-          // ...scanningPeople,
         ],
       ),
     );
@@ -440,11 +508,6 @@ class _RescueScopeState extends State<RescueScope>
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     MyColorScheme themeData = themeNotifier.themeData;
     return initStatus ? widgetInitStatus() : widgetRescueStatus(themeData);
-    // return Expanded(
-    //   child: initStatus
-    //       ? widgetInitStatus()
-    //       : widgetRescueStatus(themeData),
-    // );
   }
 
   @override

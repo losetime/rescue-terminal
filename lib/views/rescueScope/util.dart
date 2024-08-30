@@ -5,8 +5,9 @@ class User {
   final String id;
   final String name;
   final String avatar;
+  final Offset position;
 
-  User({required this.id, required this.name, required this.avatar});
+  User({required this.id, required this.name, required this.avatar, required this.position});
 }
 
 class MaskPainter extends CustomPainter {
