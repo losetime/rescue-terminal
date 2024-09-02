@@ -22,7 +22,7 @@ class _DisplaySettingState extends State<DisplaySetting> {
     for (int i = 0; i < themeOptions.length; i++) {
       themeAssemble.add(
         Container(
-          width: 240,
+          width: 180,
           margin: const EdgeInsets.only(left: 30),
           child: Column(
             children: [
@@ -59,38 +59,17 @@ class _DisplaySettingState extends State<DisplaySetting> {
             ],
           ),
         ),
-
       );
     }
-    // return Expanded(
-    //   child: Column(
-    //     crossAxisAlignment: CrossAxisAlignment.start,
-    //     children: [
-    //       const Padding(
-    //         padding: EdgeInsets.only(top: 14, left: 30, bottom: 39),
-    //         child: Text('显示设置'),
-    //       ),
-    //       SizedBox(
-    //         width: 800,
-    //         child: Wrap(
-    //           runSpacing: 30, // 纵轴（垂直）方向间距
-    //           children: [
-    //             ...themeAssemble,
-    //           ],
-    //         ),
-    //       )
-    //     ],
-    //   ),
-    // );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.only(top: 14, left: 30, bottom: 39),
+          padding: EdgeInsets.only(top: 14, left: 30, bottom: 26),
           child: Text('显示设置'),
         ),
         SizedBox(
-          width: 800,
+          width: 450,
           child: Wrap(
             runSpacing: 30, // 纵轴（垂直）方向间距
             children: [
