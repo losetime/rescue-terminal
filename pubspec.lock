@@ -94,6 +94,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_compass:
+    dependency: "direct main"
+    description:
+      name: flutter_compass
+      sha256: be642484f9f6975c1c6edff568281b001f2f1e604de27ecea18d97eebbdef22f
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.8.0"
   flutter_downloader:
     dependency: "direct main"
     description:
@@ -184,14 +192,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.4.0"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      sha256: "623a88c9594aa774443aa3eb2d41807a48486b5613e67599fb4c41c0ad47c340"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.2.0"
   matcher:
     dependency: transitive
     description:
@@ -368,22 +368,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.1.2"
-  sensors_plus:
-    dependency: "direct main"
-    description:
-      name: sensors_plus
-      sha256: "90f2d38471ca75625f6569d1044d783e0add43548692fbe6e53b008a38a8313a"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "6.0.1"
-  sensors_plus_platform_interface:
-    dependency: transitive
-    description:
-      name: sensors_plus_platform_interface
-      sha256: b6cacfe243cbeb16403ba688cb0d7054ad4dccb946dcd1254bebdf345fe4b187
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.0.0"
   shared_preferences:
     dependency: "direct main"
     description:

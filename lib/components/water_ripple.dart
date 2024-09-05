@@ -114,13 +114,13 @@ class WaterRippleState extends State<WaterRipple>
     super.initState();
   }
 
+  // 开始动画
   void startAnimation() {
-    print('开始动画');
     _controller.repeat();
   }
 
+  // 停止动画
   void stopAnimation() {
-    print('停止动画');
     _controller.stop();
   }
 

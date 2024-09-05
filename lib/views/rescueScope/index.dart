@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:rescue_terminal/components/water_ripple.dart';
 import 'dart:math';
 import 'package:rescue_terminal/views/rescueScope/util.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:rescue_terminal/components/widget_default_btn.dart';
 import 'package:provider/provider.dart';
 import 'package:rescue_terminal/store/theme_notifier.dart';
 import 'package:rescue_terminal/components/widget_empty.dart';
+import 'package:rescue_terminal/views/rescueScope/rotating_fanshaped.dart';
 
 class RescueScope extends StatefulWidget {
   const RescueScope({super.key});
@@ -20,103 +20,11 @@ class _RescueScopeState extends State<RescueScope>
   final globalKey = GlobalKey<AnimatedListState>();
   final GlobalKey<WaterRippleState> rippleKey = GlobalKey<WaterRippleState>();
 
-  // late AnimationController _controller;
-  // late Animation<double> _scaleAnimation;
-  // late Animation<double> _maskPainterAnimation;
-  // bool _isAnimating = false;
-  // double _currentAngle = 0.0;
-  // double _targetAngle = 0.0;
-  // dynamic _gyroscopeEvent;
-
   // 是否初始状态
   bool initStatus = true;
 
   // 搜索状态
   bool isSearching = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // _controller = AnimationController(
-    //   duration: const Duration(seconds: 1),
-    //   vsync: this,
-    // );
-
-    // _scaleAnimation = CurvedAnimation(
-    //   parent: _controller,
-    //   curve: Curves.easeInOut,
-    // );
-
-    // _maskPainterAnimation =
-    //     Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
-    //   CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    // );
-    //
-    // // Start the animation
-    // _controller.forward();
-    //
-    // // 添加状态监听器
-    // _controller.addStatusListener((status) {
-    //   if (status == AnimationStatus.forward ||
-    //       status == AnimationStatus.reverse) {
-    //     setState(() {
-    //       _isAnimating = true;
-    //     });
-    //   } else if (status == AnimationStatus.completed ||
-    //       status == AnimationStatus.dismissed) {
-    //     setState(() {
-    //       _isAnimating = false;
-    //     });
-    //   }
-    // });
-    //
-    // // 陀螺仪
-    // _gyroscopeEvent =
-    //     gyroscopeEventStream(samplingPeriod: SensorInterval.normalInterval)
-    //         .listen(
-    //   (GyroscopeEvent event) {
-    //     if (!_isAnimating) {
-    //       var z = event.z;
-    //       if (z > 0.1) {
-    //         double randomNum = (Random().nextDouble() * 10).floor() / 10;
-    //         _updateRotation(_targetAngle - randomNum);
-    //         Future.delayed(const Duration(milliseconds: 1000), () {
-    //           _updateRotation(_targetAngle + randomNum);
-    //         });
-    //       } else if (z < -0.1) {
-    //         double randomNum = (Random().nextDouble() * 10).floor() / 10;
-    //         _updateRotation(_targetAngle + randomNum);
-    //         Future.delayed(const Duration(milliseconds: 1000), () {
-    //           _updateRotation(_targetAngle - randomNum);
-    //         });
-    //       }
-    //     }
-    //   },
-    //   onError: (e) {
-    //     debugPrint('Sensor Not Found');
-    //   },
-    //   cancelOnError: true,
-    // );
-  }
-
-  @override
-  void dispose() {
-    // _gyroscopeEvent.cancel();
-    // _controller.dispose();
-    super.dispose();
-  }
-
-  // void _updateRotation(double newAngle) {
-  //   setState(() {
-  //     _currentAngle = _targetAngle;
-  //     _targetAngle = newAngle;
-  //     _maskPainterAnimation =
-  //         Tween<double>(begin: _currentAngle, end: _targetAngle).animate(
-  //       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-  //     );
-  //     _controller.forward(from: 0.0); // 重新启动动画
-  //   });
-  // }
 
   // 进入搜救页面
   handleEnterRescue() {
@@ -301,8 +209,9 @@ class _RescueScopeState extends State<RescueScope>
                         border: Border.all(
                           color: const Color.fromRGBO(124, 176, 80, 1),
                         ),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(5)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(5),
+                        ),
                       ),
                       child: const Text(
                         '佩戴中',
@@ -433,6 +342,7 @@ class _RescueScopeState extends State<RescueScope>
               builder: (context, constraints) {
                 return Stack(
                   alignment: Alignment.center,
+                  clipBehavior: Clip.none,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(20),
@@ -440,22 +350,6 @@ class _RescueScopeState extends State<RescueScope>
                       height: double.infinity,
                       child: WaterRipple(key: rippleKey),
                     ),
-                    // AnimatedBuilder(
-                    //   animation: _maskPainterAnimation,
-                    //   builder: (context, child) {
-                    //     return Transform.rotate(
-                    //       // 旋转角度（弧度）
-                    //       angle: _maskPainterAnimation.value,
-                    //       child: CustomPaint(
-                    //         // size: const Size(double.infinity, double.infinity),
-                    //         size: Size(constraints.maxWidth, constraints.maxHeight),
-                    //         painter: MaskPainter(
-                    //           maskColor: const Color.fromRGBO(203, 215, 225, 1),
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
                     ...haveScanPeopleRecord.map((user) {
                       return Positioned(
                         left: user.position.dx,
@@ -483,7 +377,7 @@ class _RescueScopeState extends State<RescueScope>
                       );
                     }).toList(),
                     Positioned(
-                      left: 0,
+                      right: 0,
                       bottom: 0,
                       child: WidgetDefaultBtn(
                         name: '添加人员',
@@ -498,6 +392,11 @@ class _RescueScopeState extends State<RescueScope>
                         callback: handleAppendScanPeople,
                         width: 110,
                       ),
+                    ),
+                    const Positioned(
+                      left: 20,
+                      bottom: -60,
+                      child: RotatingFanshaped(),
                     ),
                   ],
                 );

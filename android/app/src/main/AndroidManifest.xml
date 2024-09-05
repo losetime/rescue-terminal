@@ -10,6 +10,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!--权限允许应用程序请求安装包的权限-->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!--适用于低精度的位置请求，因为它不使用 GPS，而是依赖网络信号，功耗低-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--适用于高精度的位置请求，使用GPS和网络定位，功耗较高-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:label="搜救终端"
