@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:rescue_terminal/store/theme_notifier.dart';
 import 'package:rescue_terminal/components/widget_empty.dart';
 import 'package:rescue_terminal/views/rescueScope/rotating_fanshaped.dart';
+// import 'package:rescue_terminal/components/serial_port_service.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 
 class RescueScope extends StatefulWidget {
   const RescueScope({super.key});
@@ -19,6 +21,14 @@ class _RescueScopeState extends State<RescueScope>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final globalKey = GlobalKey<AnimatedListState>();
   final GlobalKey<WaterRippleState> rippleKey = GlobalKey<WaterRippleState>();
+  // final serialPortService = SerialPortService();
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   final ports = serialPortService.getAvailablePorts();
+  //   Fluttertoast.showToast(msg: '端口-- $ports');
+  // }
 
   // 是否初始状态
   bool initStatus = true;

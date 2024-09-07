@@ -49,6 +49,8 @@ dependencies:
   permission_handler: ^11.3.1
   #获取文件系统上的公共位置
   path_provider: ^2.1.4
+  #串行端口调试器，Dart包libserialport的简单包装器
+  #flutter_libserialport: ^0.4.0
 
 dev_dependencies:
   flutter_test:
