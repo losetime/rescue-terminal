@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:rescue_terminal/store/theme_notifier.dart';
 import 'package:rescue_terminal/components/widget_empty.dart';
 import 'package:rescue_terminal/views/rescueScope/rotating_fanshaped.dart';
-// import 'package:rescue_terminal/components/serial_port_service.dart';
-// import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rescue_terminal/components/serial_port_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class RescueScope extends StatefulWidget {
   const RescueScope({super.key});
@@ -21,20 +21,18 @@ class _RescueScopeState extends State<RescueScope>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final globalKey = GlobalKey<AnimatedListState>();
   final GlobalKey<WaterRippleState> rippleKey = GlobalKey<WaterRippleState>();
-  // final serialPortService = SerialPortService();
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   final ports = serialPortService.getAvailablePorts();
-  //   Fluttertoast.showToast(msg: '端口-- $ports');
-  // }
-
+  final serialPortService = SerialPortService();
+  List ports = [];
   // 是否初始状态
   bool initStatus = true;
-
   // 搜索状态
   bool isSearching = false;
+
+  @override
+  void dispose() {
+    serialPortService.closePort();
+    super.dispose();
+  }
 
   // 进入搜救页面
   handleEnterRescue() {
@@ -42,6 +40,7 @@ class _RescueScopeState extends State<RescueScope>
       initStatus = false;
       isSearching = true;
     });
+    handleSerialPort();
   }
 
   // 开始搜救
@@ -49,6 +48,7 @@ class _RescueScopeState extends State<RescueScope>
     setState(() {
       isSearching = true;
     });
+    handleSerialPort();
     // 开始动画
     rippleKey.currentState?.startAnimation();
   }
@@ -58,8 +58,34 @@ class _RescueScopeState extends State<RescueScope>
     setState(() {
       isSearching = false;
     });
+    serialPortService.closePort();
     // 停止动画
     rippleKey.currentState?.stopAnimation();
+  }
+
+  // 操作串口服务
+  handleSerialPort() async {
+    final devices = await serialPortService.getUsbDevicesList();
+    if (devices.isNotEmpty) {
+      final isSuccess = await serialPortService.openPort(devices[0]);
+      if (isSuccess) {
+        serialPortService.readData((String msg) {
+          // 在关闭端口的时候，还有发送一次空数据的消息，所以这里要判断一下
+          if (msg.isNotEmpty) {
+            Future.delayed(const Duration(seconds: 4), () {
+              Fluttertoast.showToast(
+                msg: '接收到串口数据--- $msg',
+                toastLength: Toast.LENGTH_LONG,
+              );
+            });
+          }
+        });
+      }
+    } else {
+      Fluttertoast.showToast(
+        msg: '未找到通信通道',
+      );
+    }
   }
 
   // 初始状态

@@ -12,7 +12,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
-// import 'package:install_plugin/install_plugin.dart';
 
 class UpdateSetting extends StatefulWidget {
   const UpdateSetting({super.key});
@@ -152,7 +151,8 @@ class _UpdateSettingState extends State<UpdateSetting> {
       String fileName = 'app-release.apk';
       filePath = '$directoryPath/$fileName';
       final file = File(filePath);
-      if (await file.exists()) {
+      final fileExists = await file.exists();
+      if (fileExists) {
         await file.delete();
       }
       downloadTaskId = (await FlutterDownloader.enqueue(
@@ -184,12 +184,6 @@ class _UpdateSettingState extends State<UpdateSetting> {
     debugPrint('开始安装');
     FlutterDownloader.open(taskId: downloadTaskId);
     SystemNavigator.pop();
-    // final res = await InstallPlugin.install(filePath);
-    // if(res['isSuccess']) {
-    //   Fluttertoast.showToast(msg: '安装成功');
-    // } else {
-    //   Fluttertoast.showToast(msg: '安装失败，请重试');
-    // }
   }
 
   /*

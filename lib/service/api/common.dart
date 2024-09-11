@@ -1,5 +1,4 @@
 import 'package:rescue_terminal/service/http/index.dart';
-import 'package:dio/dio.dart';
 
 class CommonAPI {
   Future<dynamic> apiGetAppPackageInfo() async {
