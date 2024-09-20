@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:logger/logger.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class DatabaseHelper {
   final logger = Logger();
@@ -32,16 +33,17 @@ class DatabaseHelper {
     return await openDatabase(path, version: 1, onCreate: _onCreateTable);
   }
 
-  // 创建数据库表white_list
+  // 创建数据库表
   // 在SQLite中，虽然你可以使用 BOOLEAN 类型定义字段，但实际上 SQLite 并没有原生的布尔类型。
   // SQLite 会将布尔值存储为 INTEGER，其中 0 表示 false，1 表示 true。
   Future<void> _onCreateTable(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE white_list(
+      CREATE TABLE users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         imei TEXT,
-        isOnline INTEGER
+        isOnline INTEGER,
+        whiteList INTEGER
       )
     ''');
   }
@@ -56,6 +58,22 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> queryAllData(String tableName) async {
     final db = await database;
     return await db.query(tableName);
+  }
+
+  // 批量插入数据
+  Future<void> insertTableData(String tableName, List data) async {
+    final db = await database;
+    try {
+      // db.transaction((txn) 使用事务，出错自动回滚
+      await db.transaction((txn) async {
+        for (var user in data) {
+          await txn.insert(tableName, user);
+        }
+      });
+      Fluttertoast.showToast(msg: '数据写入成功');
+    } catch(error) {
+      Fluttertoast.showToast(msg: '数据写入失败');
+    }
   }
 
   // 清空表方法

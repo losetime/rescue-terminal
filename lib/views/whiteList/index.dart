@@ -95,20 +95,22 @@ class _WhiteListState extends State<WhiteList> {
 
   // 删除白名单
   handleDeleteWhiteList(String imei) async {
-    int findIndex = whiteListRecord.indexWhere((e) => e['imei'] == imei);
-    if (findIndex >= 0 && findIndex < whiteListRecord.length) {
-      var removedItem = whiteListRecord[findIndex];
-      // 在 AnimatedList 中移除元素
-      whiteListGlobalKey.currentState!.removeItem(
-        findIndex,
-        (context, animation) =>
-            _buildItem(removedItem, animation, handleDeleteWhiteList, '1'),
-      );
-      // 从数据源中移除元素
-      setState(() {
-        whiteListRecord.removeAt(findIndex);
-      });
-
+    bool isSuccess =  await WhiteListUtil().deleteWhiteList(imei);
+    if(isSuccess) {
+      int findIndex = whiteListRecord.indexWhere((e) => e['imei'] == imei);
+      if (findIndex >= 0 && findIndex < whiteListRecord.length) {
+        var removedItem = whiteListRecord[findIndex];
+        // 在 AnimatedList 中移除元素
+        whiteListGlobalKey.currentState!.removeItem(
+          findIndex,
+              (context, animation) =>
+              _buildItem(removedItem, animation, handleDeleteWhiteList, '1'),
+        );
+        // 从数据源中移除元素
+        setState(() {
+          whiteListRecord.removeAt(findIndex);
+        });
+      }
     }
     // await WhiteListUtil().deleteWhiteList(id);
     // await getWhiteList();

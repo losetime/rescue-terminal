@@ -42,23 +42,36 @@ class WhiteListUtil {
   }
 
   // 删除白名单
-  Future<void> deleteWhiteList(int id) async {
+  Future<bool> deleteWhiteList(String imei) async {
     final db = await dbHelper.database;
     try{
-      await db.delete(
-        'white_list', // 表名
-        where: 'id = ?', // 删除条件
-        whereArgs: [id], // 条件值
+      int count = await db.update(
+        'users',
+        {
+          'whiteList': 0,
+        },
+        where: 'imei = ?',
+        whereArgs: [imei],
       );
+      if(count > 0) {
+        return true;
+      } else {
+        return false;
+      }
+      // await db.delete(
+      //   'users', // 表名
+      //   where: 'id = ?', // 删除条件
+      //   whereArgs: [id], // 条件值
+      // );
     }catch(e){
       logger.e('删除白名单失败');
+      return false;
     }
   }
 
   // 获取白名单数据
   Future<List<Map<String, dynamic>>> queryWhiteList() async {
-    final result = await dbHelper.queryAllData('white_list');
-    logger.d('查询白名单--, $result');
-    return result;
+    final db = await dbHelper.database;
+    return db.query('users', where: 'whiteList = ?', whereArgs: [1]);
   }
 }

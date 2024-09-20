@@ -1,3 +1,4 @@
+// import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:rescue_terminal/components/water_ripple.dart';
 import 'dart:math';
@@ -23,8 +24,10 @@ class _RescueScopeState extends State<RescueScope>
   final GlobalKey<WaterRippleState> rippleKey = GlobalKey<WaterRippleState>();
   final serialPortService = SerialPortService();
   List ports = [];
+
   // 是否初始状态
   bool initStatus = true;
+
   // 搜索状态
   bool isSearching = false;
 
@@ -63,15 +66,30 @@ class _RescueScopeState extends State<RescueScope>
     rippleKey.currentState?.stopAnimation();
   }
 
+  handleTest(msg) async {
+    List userList = await RescueScopeUtil().queryUserByImei(msg);
+    if (userList.isNotEmpty) {
+      handleAppendScanPeople(userList[0]);
+    }
+  }
+
   // 操作串口服务
   handleSerialPort() async {
     final devices = await serialPortService.getUsbDevicesList();
     if (devices.isNotEmpty) {
       final isSuccess = await serialPortService.openPort(devices[0]);
       if (isSuccess) {
-        serialPortService.readData((String msg) {
-          // 在关闭端口的时候，还有发送一次空数据的消息，所以这里要判断一下
+        serialPortService.readData((String msg) async {
+          // 在关闭端口的时候，还会发送一次空数据的消息，所以这里要判断一下
           if (msg.isNotEmpty) {
+            // 把json字符串转为json
+            // final jsonMsg = jsonDecode("{'name': 'hello', ""}");
+            // print('jsonMsg--, ${jsonMsg['name']}');
+            // 根据串口信息，匹配数据库人员
+            List userList = await RescueScopeUtil().queryUserByImei(msg);
+            if (userList.isNotEmpty) {
+              handleAppendScanPeople(userList[0]);
+            }
             Future.delayed(const Duration(seconds: 4), () {
               Fluttertoast.showToast(
                 msg: '接收到串口数据--- $msg',
@@ -86,6 +104,121 @@ class _RescueScopeState extends State<RescueScope>
         msg: '未找到通信通道',
       );
     }
+  }
+
+  /*
+  * @author: wwp
+  * @createTime: 2024/8/30 16:00
+  * @description: 向雷达图添加扫描到的人员
+  * @param
+  * @return
+  */
+  handleAppendScanPeople(newUser) {
+    final RenderBox renderBox =
+        rippleKey.currentContext!.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final position = getRandomPositionInSector(size);
+    final user = User(
+      id: '#${newUser['imei']}',
+      imei: newUser['imei'],
+      name: newUser['name'],
+      avatar: 'assets/images/construction-personnel.png',
+      position: position,
+    );
+    // 确保列表不重复
+    final findScanIndex =
+        haveScanPeopleRecord.indexWhere((u) => u.imei == user.imei);
+    if (findScanIndex == -1) {
+      setState(() {
+        haveScanPeopleRecord.add(user);
+      });
+    }
+    // 确保列表不重复
+    final findRecordIndex =
+        haveFoundPeopleRecord.indexWhere((u) => u.imei == user.imei);
+    if (findRecordIndex == -1) {
+      setState(() {
+        haveFoundPeopleRecord.insert(0, user);
+      });
+      if (globalKey.currentState != null) {
+        globalKey.currentState!.insertItem(0);
+      }
+    }
+    // 设置一段时间后将新添加的标记置为 false，避免重复动画
+    Future.delayed(const Duration(milliseconds: 300), () {
+      setState(() {
+        haveScanPeopleRecord.last = User(
+          id: haveScanPeopleRecord.last.id,
+          imei: haveScanPeopleRecord.last.imei,
+          name: haveScanPeopleRecord.last.name,
+          avatar: haveScanPeopleRecord.last.avatar,
+          position: haveScanPeopleRecord.last.position,
+          isNew: false,
+        );
+      });
+    });
+
+    // 在一段时间后在雷达移除该用户
+    Future.delayed(const Duration(seconds: 6), () {
+      final findIndex =
+          haveScanPeopleRecord.indexWhere((u) => u.imei == user.imei);
+      if (findIndex != -1) {
+        setState(() {
+          haveScanPeopleRecord[findIndex].isBeingRemoved = true;
+        });
+      }
+      // 在动画执行后移除该用户
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (findIndex != -1) {
+          setState(() {
+            haveScanPeopleRecord.removeAt(findIndex);
+          });
+        }
+      });
+    });
+  }
+
+  Offset getRandomPositionInSector(Size size) {
+    // 定义扇形中心为底部中心
+    final center = Offset(size.width / 2, size.height - 100);
+    // 计算扇形的半径，减去一定边距
+    final radius = min(size.width, size.height) - 100;
+    // 扇形的角度范围为60度到120度，以扇形底部中心为起点
+    const angleOffset = 60;
+
+    Offset newPosition = const Offset(0, 0);
+    bool positionIsValid = false;
+    // 避免一直找不到合适位置,所以如果随机5次，还没有合适位置，就算了
+    int maxLoops = 40;
+    int currLoop = 1;
+
+    while (!positionIsValid) {
+      final angle = angleOffset + Random().nextDouble() * 60; // 随机生成60度到120度的角度
+      final angleInRadians = angle * pi / 180; // 将角度转换为弧度
+      // 均匀生成随机半径
+      final r = sqrt(Random().nextDouble()) * radius;
+      // 通过极坐标计算出随机点的位置
+      final x = center.dx + r * cos(angleInRadians);
+      final y = center.dy + r * sin(-angleInRadians);
+      newPosition = Offset(x, y);
+
+      // 检查新位置是否与现有位置足够远
+      positionIsValid = _isPositionValid(newPosition);
+      currLoop += 1;
+      if (currLoop > maxLoops) {
+        positionIsValid = true;
+      }
+    }
+    return newPosition;
+  }
+
+  bool _isPositionValid(Offset newPosition) {
+    for (User item in haveScanPeopleRecord) {
+      if ((item.position - newPosition).distance < 50) {
+        return false; // 新位置与已生成的位置太近
+      }
+    }
+    return true; // 新位置有效
   }
 
   // 初始状态
@@ -286,88 +419,6 @@ class _RescueScopeState extends State<RescueScope>
     );
   }
 
-  /*
-  * @author: wwp
-  * @createTime: 2024/8/30 16:00
-  * @description: 向雷达图添加扫描到的人员
-  * @param
-  * @return
-  */
-  handleAppendScanPeople() {
-    final RenderBox renderBox =
-        rippleKey.currentContext!.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-    final position = getRandomPositionInSector(size);
-    final user = User(
-      id: '#10002',
-      name: '李逵',
-      avatar: 'assets/images/construction-personnel.png',
-      position: position,
-    );
-    setState(() {
-      haveScanPeopleRecord.add(user);
-      haveFoundPeopleRecord.insert(0, user);
-    });
-    if (globalKey.currentState != null) {
-      globalKey.currentState!.insertItem(0);
-    }
-    // 设置一段时间后将新添加的标记置为 false，避免重复动画
-    Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() {
-        haveScanPeopleRecord.last = User(
-          id: haveScanPeopleRecord.last.id,
-          name: haveScanPeopleRecord.last.name,
-          avatar: haveScanPeopleRecord.last.avatar,
-          position: haveScanPeopleRecord.last.position,
-          isNew: false,
-        );
-      });
-    });
-  }
-
-  Offset getRandomPositionInSector(Size size) {
-    // 定义扇形中心为底部中心
-    final center = Offset(size.width / 2, size.height - 100);
-    // 计算扇形的半径，减去一定边距
-    final radius = min(size.width, size.height) - 100;
-    // 扇形的角度范围为60度到120度，以扇形底部中心为起点
-    const angleOffset = 60;
-
-    Offset newPosition = const Offset(0, 0);
-    bool positionIsValid = false;
-    // 避免一直找不到合适位置,所以如果随机5次，还没有合适位置，就算了
-    int maxLoops = 40;
-    int currLoop = 1;
-
-    while (!positionIsValid) {
-      final angle = angleOffset + Random().nextDouble() * 60; // 随机生成60度到120度的角度
-      final angleInRadians = angle * pi / 180; // 将角度转换为弧度
-      // 均匀生成随机半径
-      final r = sqrt(Random().nextDouble()) * radius;
-      // 通过极坐标计算出随机点的位置
-      final x = center.dx + r * cos(angleInRadians);
-      final y = center.dy + r * sin(-angleInRadians);
-      newPosition = Offset(x, y);
-
-      // 检查新位置是否与现有位置足够远
-      positionIsValid = _isPositionValid(newPosition);
-      currLoop += 1;
-      if (currLoop > maxLoops) {
-        positionIsValid = true;
-      }
-    }
-    return newPosition;
-  }
-
-  bool _isPositionValid(Offset newPosition) {
-    for (User item in haveScanPeopleRecord) {
-      if ((item.position - newPosition).distance < 50) {
-        return false; // 新位置与已生成的位置太近
-      }
-    }
-    return true; // 新位置有效
-  }
-
   // 扫描雷达
   Widget widgetScanningRadar() {
     return Expanded(
@@ -387,11 +438,13 @@ class _RescueScopeState extends State<RescueScope>
                       child: WaterRipple(key: rippleKey),
                     ),
                     ...haveScanPeopleRecord.map((user) {
-                      return Positioned(
+                      return AnimatedPositioned(
+                        key: ValueKey(user.id),
+                        duration: const Duration(milliseconds: 0),
                         left: user.position.dx,
                         top: user.position.dy,
                         child: AnimatedOpacity(
-                          opacity: user.isNew ? 0 : 1,
+                          opacity: user.isNew || user.isBeingRemoved ? 0 : 1,
                           duration: const Duration(milliseconds: 300),
                           child: Column(
                             children: [
@@ -412,27 +465,34 @@ class _RescueScopeState extends State<RescueScope>
                         ),
                       );
                     }).toList(),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: WidgetDefaultBtn(
-                        name: '添加人员',
-                        btnBgColor: const LinearGradient(
-                          colors: [
-                            Color.fromRGBO(101, 110, 126, 1),
-                            Color.fromRGBO(101, 110, 126, 1)
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        callback: handleAppendScanPeople,
-                        width: 110,
-                      ),
-                    ),
                     const Positioned(
                       left: 20,
                       bottom: -60,
                       child: RotatingFanshaped(),
+                    ),
+                    Positioned(
+                      right: 20,
+                      bottom: 20,
+                      child: WidgetDefaultBtn(
+                        name: '测试',
+                        btnBgColor: const LinearGradient(
+                          colors: [
+                            Color.fromRGBO(255, 171, 119, 1),
+                            Color.fromRGBO(244, 182, 134, 1),
+                            Color.fromRGBO(245, 81, 64, 1)
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        callback: () {
+                          final list = ['1', '2', '3', '4'];
+                          var random = Random();
+                          int randomNumber =
+                              random.nextInt(4); // 生成 0 到 9 之间的随机整数
+                          handleTest(list[randomNumber]);
+                        },
+                        width: 110,
+                      ),
                     ),
                   ],
                 );

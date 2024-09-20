@@ -10,4 +10,14 @@ class CommonAPI {
       print("Error: $e");
     }
   }
+
+  Future<dynamic> apiGetUserList() async {
+    try {
+      final response = await DioClient.instance.get("/user/list");
+      print(response);
+      return response.data;
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 }
